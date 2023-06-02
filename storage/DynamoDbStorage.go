@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"writer_storage_app/storage/choice"
+
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
@@ -38,8 +40,12 @@ func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbs
 	//Permision to write
 	table.GrantWriteData(props.PlugFunc)
 	//Add destination for lambda at Run time
-	props.PlugFunc.AddEnvironment(jsii.String("STORAGE_SOLUTION"), jsii.String("DYNAMODB"), &awslambda.EnvironmentOptions{})
-	props.PlugFunc.AddEnvironment(jsii.String("DESTINATION"), table.TableName(), &awslambda.EnvironmentOptions{})
+
+	choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &choice.ChoiceStorageProps{
+		Storage_solution: jsii.String("DYNAMODB"),
+		Destination:      table.TableName(),
+		Granteable:       props.PlugFunc,
+	})
 
 	return dynamoDbstorage{this}
 }

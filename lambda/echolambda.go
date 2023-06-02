@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
 type receiver interface {
@@ -86,6 +87,9 @@ func init() {
 		// Handle error
 	}
 
+	ssmclient := ssm.NewFromConfig(cfg)
+	ssmclient.G
+
 	if os.Getenv("STORAGE_SOLUTION") == "DYNAMODB" {
 		clientReceiver = dynamodreceiver{client: dynamodb.NewFromConfig(cfg)}
 	}
@@ -94,4 +98,5 @@ func init() {
 
 		clientReceiver = s3receiver{client: s3.NewFromConfig(cfg)}
 	}
+
 }

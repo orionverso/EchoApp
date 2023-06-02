@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"writer_storage_app/storage/choice"
+
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awss3"
@@ -34,8 +36,11 @@ func NewS3storage(scope constructs.Construct, id *string, props *S3storageProps)
 
 	bucket.GrantWrite(props.PlugFunc, jsii.String("*"), jsii.Strings("*"))
 
-	props.PlugFunc.AddEnvironment(jsii.String("STORAGE_SOLUTION"), jsii.String("S3"), &awslambda.EnvironmentOptions{})
-	props.PlugFunc.AddEnvironment(jsii.String("DESTINATION"), bucket.BucketName(), &awslambda.EnvironmentOptions{})
+	choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &choice.ChoiceStorageProps{
+		Storage_solution: jsii.String("S3"),
+		Destination:      bucket.BucketName(),
+		Granteable:       props.PlugFunc,
+	})
 
 	return s3storage{this}
 
