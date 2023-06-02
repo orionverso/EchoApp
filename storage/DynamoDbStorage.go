@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
 	"github.com/aws/constructs-go/constructs/v10"
@@ -32,6 +33,7 @@ func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbs
 			Name: jsii.String("id"),
 			Type: awsdynamodb.AttributeType_STRING,
 		},
+		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
 	//Permision to write
 	table.GrantWriteData(props.PlugFunc)

@@ -1,6 +1,7 @@
 package writer
 
 import (
+	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslogs"
@@ -40,8 +41,9 @@ func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApi
 	})
 
 	logGroup := awslogs.NewLogGroup(this, jsii.String("ApiLogGroup"), &awslogs.LogGroupProps{
-		LogGroupName: jsii.String("/aws/apigateway/MyRestApi"),
-		Retention:    awslogs.RetentionDays_ONE_WEEK,
+		LogGroupName:  jsii.String("/aws/apigateway/MyRestApi"),
+		Retention:     awslogs.RetentionDays_ONE_WEEK,
+		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
 
 	awsapigateway.NewLambdaRestApi(this, jsii.String("EndpointWriter"), &awsapigateway.LambdaRestApiProps{

@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
 	"log"
 	"os"
 
@@ -27,11 +26,13 @@ type s3receiver struct {
 func (s3rv s3receiver) Write(st string) error {
 	body := []byte(st)
 	_, err := s3rv.client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket: aws.String(os.Getenv("DESTINATION")),
-		Key:    aws.String("Example.txt"),
-		Body:   ioutil.NopCloser(bytes.NewReader(body)),
+		ContentType: aws.String("application/json"),
+		Bucket:      aws.String(os.Getenv("DESTINATION")),
+		Key:         aws.String("Example.json"),
+		Body:        bytes.NewReader(body),
 	})
 	if err != nil {
+
 		log.Println(err)
 		return err
 	}
