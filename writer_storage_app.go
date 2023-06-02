@@ -1,6 +1,9 @@
 package main
 
 import (
+	"writer_storage_app/storage"
+	"writer_storage_app/writer"
+
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
 	"github.com/aws/constructs-go/constructs/v10"
@@ -18,12 +21,11 @@ func NewWriterStorageAppStack(scope constructs.Construct, id string, props *Writ
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
-	// The code that defines your stack goes here
+	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
 
-	// example resource
-	// queue := awssqs.NewQueue(stack, jsii.String("WriterStorageAppQueue"), &awssqs.QueueProps{
-	// 	VisibilityTimeout: awscdk.Duration_Seconds(jsii.Number(300)),
-	// })
+	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
+		PlugFunc: wr.PlugFunc(),
+	})
 
 	return stack
 }
