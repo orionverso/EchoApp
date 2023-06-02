@@ -30,16 +30,11 @@ func NewWriterInstance(scope constructs.Construct, id *string, props *WriterTask
 
 	repo := awsecr.NewRepository(this, jsii.String("DockerEcrRepository"), &awsecr.RepositoryProps{
 		RepositoryName: jsii.String("writer-app-repo"),
-		RemovalPolicy:  awscdk.RemovalPolicy_DESTROY,
+		RemovalPolicy:  awscdk.RemovalPolicy_RETAIN,
 	})
 
 	image := awsecs.AssetImage_FromEcrRepository(repo, jsii.String("latest"))
-
-	/*
-		container := awsecs.NewContainerDefinition(this, jsii.String("GoWebServerContainer"), &awsecs.ContainerDefinitionProps{
-			Image: image,
-		})
-	*/
+	//YOU NEED TO PUSH THE FIRST IMAGE ASAP WHEN THE REPO IS CREATED
 
 	var cluster awsecs.Cluster
 
