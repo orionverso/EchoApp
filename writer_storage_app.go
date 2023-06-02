@@ -46,6 +46,22 @@ func NewWriterStorageAppStackS3(scope constructs.Construct, id string, props *Wr
 	return stack
 }
 
+func NewWriterStorageAppStack(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
+	var sprops awscdk.StackProps
+	if props != nil {
+		sprops = props.StackProps
+	}
+	stack := awscdk.NewStack(scope, &id, &sprops)
+
+	writer.NewWriterInstance(stack, jsii.String("TaskWriter"), &writer.WriterTaskContainerProps{})
+	/*
+		storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
+			PlugFunc: wr.PlugFunc(),
+		})
+	*/
+	return stack
+}
+
 func main() {
 	defer jsii.Close()
 
@@ -59,7 +75,7 @@ func main() {
 		})
 	*/
 
-	NewWriterStorageAppStackS3(app, "WriterStorageAppStack--S3", &WriterStorageAppStackProps{
+	NewWriterStorageAppStack(app, "WriterStorageAppStack--Container", &WriterStorageAppStackProps{
 		awscdk.StackProps{
 			Env: env(),
 		},
