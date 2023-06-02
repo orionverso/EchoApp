@@ -24,13 +24,13 @@ func (wa writerApiLambda) PlugFunc() awslambda.Function {
 	return wa.writerFunc
 }
 
-type Writer interface {
+type WriterFunc interface {
 	constructs.Construct
 	PlugFunc() awslambda.Function
 	//insert useful method to Do construct
 }
 
-func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApiLambdaProps) Writer {
+func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApiLambdaProps) WriterFunc {
 	//implement construct
 	this := constructs.NewConstruct(scope, id)
 
