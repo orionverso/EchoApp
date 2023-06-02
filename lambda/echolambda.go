@@ -66,7 +66,11 @@ func handler(ctx context.Context, ev events.APIGatewayProxyRequest) (events.APIG
 		return events.APIGatewayProxyResponse{}, err
 	}
 	return events.APIGatewayProxyResponse{
-		Body: "Thank you for testing",
+		IsBase64Encoded:   false,
+		StatusCode:        200,
+		Headers:           map[string]string{},
+		MultiValueHeaders: map[string][]string{},
+		Body:              "Thank you for testing",
 	}, nil
 }
 

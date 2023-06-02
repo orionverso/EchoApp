@@ -50,7 +50,7 @@ func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApi
 		DeployOptions: &awsapigateway.StageOptions{
 			StageName:            jsii.String("test"),
 			DataTraceEnabled:     jsii.Bool(true),
-			LoggingLevel:         awsapigateway.MethodLoggingLevel_INFO,
+			LoggingLevel:         awsapigateway.MethodLoggingLevel_ERROR,
 			AccessLogDestination: awsapigateway.NewLogGroupLogDestination(logGroup),
 		},
 	})
