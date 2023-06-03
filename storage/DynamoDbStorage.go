@@ -12,8 +12,7 @@ import (
 
 // Plug-in with other constructs
 type DynamoDbstorageProps struct {
-	PlugFunc awslambda.Function
-	//insert props from other constructs
+	PlugWriter any
 }
 
 type dynamoDbstorage struct {
@@ -37,15 +36,18 @@ func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbs
 		},
 		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
-	//Permision to write
-	table.GrantWriteData(props.PlugFunc)
-	//Add destination for lambda at Run time
 
-	choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &choice.ChoiceStorageProps{
+	ch := choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &choice.ChoiceStorageProps{
 		Storage_solution: jsii.String("DYNAMODB"),
 		Destination:      table.TableName(),
-		Granteable:       props.PlugFunc,
 	})
+
+	pl, ok := props.PlugWriter.(awslambda.Function)
+
+	if ok {
+		table.GrantWriteData(pl)
+		ch.GrantRead(pl)
+	}
 
 	return dynamoDbstorage{this}
 }

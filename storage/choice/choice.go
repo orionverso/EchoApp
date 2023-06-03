@@ -1,7 +1,7 @@
 package choice
 
 import (
-	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsssm"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
@@ -11,7 +11,7 @@ import (
 type ChoiceStorageProps struct {
 	Storage_solution *string
 	Destination      *string
-	Granteable       awslambda.Function
+	Granteable       awsiam.IGrantable
 }
 
 type choiceStorage struct {
@@ -25,6 +25,7 @@ type ChoiceStorage interface {
 	constructs.Construct
 	GetStorage() *string
 	GetDestination() *string
+	GrantRead(awsiam.IGrantable)
 	//define geter() para compartir los objetos
 	//ya que new construct devolvera una interface
 }
@@ -43,9 +44,6 @@ func NewChoiceStorage(scope constructs.Construct, id *string, props *ChoiceStora
 		StringValue:   props.Destination,
 	})
 
-	stg.GrantRead(props.Granteable)
-	dest.GrantRead(props.Granteable)
-
 	return choiceStorage{this, stg, dest}
 }
 
@@ -55,4 +53,9 @@ func (ch choiceStorage) GetStorage() *string {
 
 func (ch choiceStorage) GetDestination() *string {
 	return ch.dest.StringValue()
+
+}
+func (ch choiceStorage) GrantRead(gt awsiam.IGrantable) {
+	ch.stg.GrantRead(gt)
+	ch.dest.GrantRead(gt)
 }

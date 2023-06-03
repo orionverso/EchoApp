@@ -24,7 +24,7 @@ func NewWriterStorageAppStackDB(scope constructs.Construct, id string, props *Wr
 	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
 
 	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
-		PlugFunc: wr.PlugFunc(),
+		PlugWriter: wr.PlugFunc(),
 	})
 
 	return stack
@@ -40,7 +40,7 @@ func NewWriterStorageAppStackS3(scope constructs.Construct, id string, props *Wr
 	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
 
 	storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
-		PlugFunc: wr.PlugFunc(),
+		PlugWriter: wr.PlugFunc(),
 	})
 
 	return stack
@@ -75,7 +75,7 @@ func main() {
 		})
 	*/
 
-	NewWriterStorageAppStackS3(app, "WriterStorageAppStackS3", &WriterStorageAppStackProps{
+	NewWriterStorageAppStackS3(app, "WriterStorageAppStackDB", &WriterStorageAppStackProps{
 
 		awscdk.StackProps{
 			Env: env(),

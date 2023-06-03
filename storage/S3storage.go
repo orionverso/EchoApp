@@ -12,7 +12,7 @@ import (
 
 // Plug-in with other constructs
 type S3storageProps struct {
-	PlugFunc awslambda.Function
+	PlugWriter any
 	//insert props from other constructs
 }
 
@@ -34,13 +34,17 @@ func NewS3storage(scope constructs.Construct, id *string, props *S3storageProps)
 		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
 
-	bucket.GrantWrite(props.PlugFunc, jsii.String("*"), jsii.Strings("*"))
-
-	choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &choice.ChoiceStorageProps{
+	ch := choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &choice.ChoiceStorageProps{
 		Storage_solution: jsii.String("S3"),
 		Destination:      bucket.BucketName(),
-		Granteable:       props.PlugFunc,
 	})
+
+	pl, ok := props.PlugWriter.(awslambda.Function)
+
+	if ok {
+		bucket.GrantWrite(pl, jsii.String("*"), jsii.Strings("*"))
+		ch.GrantRead(pl)
+	}
 
 	return s3storage{this}
 
