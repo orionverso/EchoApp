@@ -75,7 +75,7 @@ func main() {
 		})
 	*/
 
-	NewWriterStorageAppStack(app, "WriterStorageAppStack--Container", &WriterStorageAppStackProps{
+	NewWriterStorageAppStackS3(app, "WriterStorageAppStackS3", &WriterStorageAppStackProps{
 		awscdk.StackProps{
 			Env: env(),
 		},

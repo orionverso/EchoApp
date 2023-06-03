@@ -35,13 +35,11 @@ func NewChoiceStorage(scope constructs.Construct, id *string, props *ChoiceStora
 
 	stg := awsssm.NewStringParameter(this, jsii.String("STORAGE_SOLUTION_PARAMETER"), &awsssm.StringParameterProps{
 		ParameterName: jsii.String("STORAGE_SOLUTION"),
-		Type:          awsssm.ParameterType_STRING,
 		StringValue:   props.Storage_solution,
 	})
 
 	dest := awsssm.NewStringParameter(this, jsii.String("DESTINATION_PARAMETER"), &awsssm.StringParameterProps{
 		ParameterName: props.Storage_solution,
-		Type:          awsssm.ParameterType_STRING,
 		StringValue:   props.Destination,
 	})
 

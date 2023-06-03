@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"log"
-	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -28,7 +27,7 @@ func (s3rv s3receiver) Write(st string) error {
 	body := []byte(st)
 	_, err := s3rv.client.PutObject(ctx, &s3.PutObjectInput{
 		ContentType: aws.String("application/json"),
-		Bucket:      aws.String(os.Getenv("DESTINATION")),
+		Bucket:      dest,
 		Key:         aws.String("Example.json"),
 		Body:        bytes.NewReader(body),
 	})
@@ -46,12 +45,13 @@ type dynamodreceiver struct {
 
 func (dbrv dynamodreceiver) Write(st string) error {
 	_, err := dbrv.client.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(os.Getenv("DESTINATION")),
+		TableName: dest,
 		Item: map[string]types.AttributeValue{
 			"id": &types.AttributeValueMemberS{Value: st},
 		},
 	})
 	if err != nil {
+
 		log.Println(err)
 		return err
 	}
@@ -60,6 +60,7 @@ func (dbrv dynamodreceiver) Write(st string) error {
 
 var clientReceiver receiver
 var ctx context.Context
+var dest *string
 
 func handler(ctx context.Context, ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	err := clientReceiver.Write(ev.Body)
@@ -88,14 +89,26 @@ func init() {
 	}
 
 	ssmclient := ssm.NewFromConfig(cfg)
-	ssmclient.G
 
-	if os.Getenv("STORAGE_SOLUTION") == "DYNAMODB" {
+	stgout, err := ssmclient.GetParameter(ctx, &ssm.GetParameterInput{
+		Name: aws.String("STORAGE_SOLUTION"),
+	})
+
+	destout, err := ssmclient.GetParameter(ctx, &ssm.GetParameterInput{
+		Name: stgout.Parameter.Value,
+	})
+
+	dest = destout.Parameter.Value
+
+	if err != nil {
+		// Handle error
+	}
+
+	if aws.ToString(stgout.Parameter.Value) == "DYNAMODB" {
 		clientReceiver = dynamodreceiver{client: dynamodb.NewFromConfig(cfg)}
 	}
 
-	if os.Getenv("STORAGE_SOLUTION") == "S3" {
-
+	if aws.ToString(stgout.Parameter.Value) == "S3" {
 		clientReceiver = s3receiver{client: s3.NewFromConfig(cfg)}
 	}
 
