@@ -76,6 +76,7 @@ func main() {
 	*/
 
 	NewWriterStorageAppStackS3(app, "WriterStorageAppStackS3", &WriterStorageAppStackProps{
+
 		awscdk.StackProps{
 			Env: env(),
 		},
