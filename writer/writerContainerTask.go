@@ -14,13 +14,18 @@ type WriterTaskContainerProps struct {
 	//insert props from other constructs
 }
 
-type writerTaskContainer struct {
+type writerTask struct {
 	constructs.Construct
 	task awsecs.TaskDefinition
 }
 
+func (wr writerTask) PlugWriter() awsecs.TaskDefinition {
+	return wr.task
+}
+
 type WriterTask interface {
 	constructs.Construct
+	PlugWriter() awsecs.TaskDefinition
 }
 
 func NewWriterInstance(scope constructs.Construct, id *string, props *WriterTaskContainerProps) WriterTask {
@@ -49,5 +54,5 @@ func NewWriterInstance(scope constructs.Construct, id *string, props *WriterTask
 		LoadBalancerName: jsii.String("application-lb-name"),
 	})
 
-	return writerTaskContainer{this, fargatepattern.TaskDefinition()}
+	return writerTask{this, fargatepattern.TaskDefinition()}
 }

@@ -20,13 +20,13 @@ type writerApiLambda struct {
 	//insert construct from other resources
 }
 
-func (wa writerApiLambda) PlugFunc() awslambda.Function {
+func (wa writerApiLambda) PlugWriter() awslambda.Function {
 	return wa.writerFunc
 }
 
 type WriterFunc interface {
 	constructs.Construct
-	PlugFunc() awslambda.Function
+	PlugWriter() awslambda.Function
 	//insert useful method to Do construct
 }
 
