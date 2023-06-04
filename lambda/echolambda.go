@@ -40,5 +40,4 @@ func init() {
 		// Handle error
 	}
 	clientReceiver, err = receiver.GetReceiver(ctx, cfg)
-
 }

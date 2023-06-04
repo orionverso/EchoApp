@@ -5,7 +5,6 @@ import (
 	"writer_storage_app/writer"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
-	// "github.com/aws/aws-cdk-go/awscdk/v2/awssqs"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
@@ -14,7 +13,7 @@ type WriterStorageAppStackProps struct {
 	awscdk.StackProps
 }
 
-func NewWriterStorageAppStackDB(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
+func NewWriterStorageAppStackApiLambdaDB(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.StackProps
@@ -30,7 +29,7 @@ func NewWriterStorageAppStackDB(scope constructs.Construct, id string, props *Wr
 	return stack
 }
 
-func NewWriterStorageAppStackS3(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
+func NewWriterStorageAppStackApiLambdaS3(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.StackProps
@@ -46,19 +45,33 @@ func NewWriterStorageAppStackS3(scope constructs.Construct, id string, props *Wr
 	return stack
 }
 
-func NewWriterStorageAppStack(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
+func NewWriterStorageAppStackFargateS3(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.StackProps
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
-	writer.NewWriterInstance(stack, jsii.String("TaskWriter"), &writer.WriterTaskContainerProps{})
-	/*
-		storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
-			PlugFunc: wr.PlugFunc(),
-		})
-	*/
+	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
+
+	storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
+		PlugWriter: wr.PlugService(),
+	})
+	return stack
+}
+
+func NewWriterStorageAppStackFargateDB(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
+	var sprops awscdk.StackProps
+	if props != nil {
+		sprops = props.StackProps
+	}
+	stack := awscdk.NewStack(scope, &id, &sprops)
+
+	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
+
+	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
+		PlugWriter: wr.PlugService(),
+	})
 	return stack
 }
 
@@ -75,7 +88,7 @@ func main() {
 		})
 	*/
 
-	NewWriterStorageAppStackS3(app, "WriterStorageAppStackDB", &WriterStorageAppStackProps{
+	NewWriterStorageAppStackFargateS3(app, "WriterStorageAppStack-Fargate-S3-", &WriterStorageAppStackProps{
 
 		awscdk.StackProps{
 			Env: env(),

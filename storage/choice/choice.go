@@ -23,8 +23,6 @@ type choiceStorage struct {
 
 type ChoiceStorage interface {
 	constructs.Construct
-	GetStorage() *string
-	GetDestination() *string
 	GrantRead(awsiam.IGrantable)
 	//define geter() para compartir los objetos
 	//ya que new construct devolvera una interface
@@ -47,14 +45,6 @@ func NewChoiceStorage(scope constructs.Construct, id *string, props *ChoiceStora
 	return choiceStorage{this, stg, dest}
 }
 
-func (ch choiceStorage) GetStorage() *string {
-	return ch.stg.StringValue()
-}
-
-func (ch choiceStorage) GetDestination() *string {
-	return ch.dest.StringValue()
-
-}
 func (ch choiceStorage) GrantRead(gt awsiam.IGrantable) {
 	ch.stg.GrantRead(gt)
 	ch.dest.GrantRead(gt)

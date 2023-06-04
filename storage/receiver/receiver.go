@@ -12,6 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
+//Implemeted aws-sdk write to storage services
+
 type Receiver interface {
 	Write(context.Context, string) error
 	GetDestination() *string
@@ -95,5 +97,6 @@ func GetReceiver(ctx context.Context, cfg aws.Config) (Receiver, error) {
 			destination: dest,
 		}, nil
 	}
-	return nil, err //nil pointer desreference
+
+	return nil, err
 }

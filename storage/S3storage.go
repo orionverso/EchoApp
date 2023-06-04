@@ -1,9 +1,11 @@
 package storage
 
 import (
+	"log"
 	"writer_storage_app/storage/choice"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsecspatterns"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awss3"
 	"github.com/aws/constructs-go/constructs/v10"
@@ -39,11 +41,29 @@ func NewS3storage(scope constructs.Construct, id *string, props *S3storageProps)
 		Destination:      bucket.BucketName(),
 	})
 
+	//TYPE ASSERTION IN ORDER TO KNOW POSSIBLE WRITER AND GRANT PERMISION
+
 	pl, ok := props.PlugWriter.(awslambda.Function)
 
 	if ok {
 		bucket.GrantWrite(pl, jsii.String("*"), jsii.Strings("*"))
 		ch.GrantRead(pl)
+	}
+
+	plserv, ok := props.PlugWriter.(awsecspatterns.ApplicationLoadBalancedFargateService)
+
+	if ok {
+		bucket.GrantWrite(plserv.TaskDefinition().TaskRole(),
+			jsii.String("*"), jsii.Strings("*"))
+		ch.GrantRead(plserv.TaskDefinition().TaskRole())
+	}
+
+	/*
+		type assertion new writer here
+	*/
+
+	if !ok {
+		log.Panicln("You must define a writer for storage solution")
 	}
 
 	return s3storage{this}

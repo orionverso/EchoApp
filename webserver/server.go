@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"writer_storage_app/storage/receiver"
+	"server/receiver"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 )

@@ -16,8 +16,6 @@ type WriterApiLambdaProps struct {
 type writerApiLambda struct {
 	constructs.Construct
 	writerFunc awslambda.Function
-	//awsapigateway.RestApi
-	//insert construct from other resources
 }
 
 func (wa writerApiLambda) PlugFunc() awslambda.Function {
@@ -56,8 +54,6 @@ func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApi
 			AccessLogDestination: awsapigateway.NewLogGroupLogDestination(logGroup),
 		},
 	})
-
-	// Create the CloudWatch Logs destination for API Gateway logs
 
 	return writerApiLambda{this, handler}
 
