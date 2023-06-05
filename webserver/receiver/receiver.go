@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"log"
+	"server/randstring"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
@@ -27,7 +28,7 @@ func (s3rv s3receiver) Write(ctx context.Context, st string) error {
 	_, err := s3rv.client.PutObject(ctx, &s3.PutObjectInput{
 		ContentType: aws.String("application/json"),
 		Bucket:      s3rv.destination,
-		Key:         aws.String("Example.json"),
+		Key:         aws.String(randstring.Randstr(10)),
 		Body:        bytes.NewReader(body),
 	})
 	if err != nil {
@@ -35,6 +36,7 @@ func (s3rv s3receiver) Write(ctx context.Context, st string) error {
 		log.Println(err)
 		return err
 	}
+	log.Println("data delivered")
 	return nil
 }
 

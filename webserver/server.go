@@ -20,15 +20,19 @@ func main() {
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.RemoteAddr)
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error Body Read", http.StatusInternalServerError)
 		return
 	}
-	clientReceiver.Write(ctx, string(body))
+	if string(body) != "" {
 
-	fmt.Fprintf(w, "Thanks you for testing. See you from a Container")
+		clientReceiver.Write(ctx, string(body))
+	}
+
+	fmt.Fprintf(w, "Thanks you for testing. I am from a Container. See you")
 }
 
 func init() {

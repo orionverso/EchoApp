@@ -1,4 +1,4 @@
-FROM golang:1.20
+FROM bitnami/golang:latest
 
 WORKDIR /usr/src/app
 
