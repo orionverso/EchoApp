@@ -23,7 +23,7 @@ func NewWriterStorageAppStackApiLambdaDB(scope constructs.Construct, id string, 
 	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
 
 	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
-		PlugWriter: wr.PlugFunc(),
+		PlugGranteableWriter: wr.PlugGranteableFunc(),
 	})
 
 	return stack
@@ -39,7 +39,7 @@ func NewWriterStorageAppStackApiLambdaS3(scope constructs.Construct, id string, 
 	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
 
 	storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
-		PlugWriter: wr.PlugFunc(),
+		PlugGranteableWriter: wr.PlugGranteableFunc(),
 	})
 
 	return stack
@@ -55,7 +55,7 @@ func NewWriterStorageAppStackFargateS3(scope constructs.Construct, id string, pr
 	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
 
 	storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
-		PlugWriter: wr.PlugService(),
+		PlugGranteableWriter: wr.PlugGranteableService(),
 	})
 	return stack
 }
@@ -70,7 +70,7 @@ func NewWriterStorageAppStackFargateDB(scope constructs.Construct, id string, pr
 	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
 
 	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
-		PlugWriter: wr.PlugService(),
+		PlugGranteableWriter: wr.PlugGranteableService(),
 	})
 	return stack
 }

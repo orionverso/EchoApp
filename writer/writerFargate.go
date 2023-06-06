@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecr"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecs"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecspatterns"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
@@ -18,13 +19,13 @@ type writerFargate struct {
 	service awsecspatterns.ApplicationLoadBalancedFargateService
 }
 
-func (wr writerFargate) PlugService() awsecspatterns.ApplicationLoadBalancedFargateService {
-	return wr.service
+func (wr writerFargate) PlugGranteableService() awsiam.IRole {
+	return wr.service.TaskDefinition().TaskRole()
 }
 
 type WriterTask interface {
 	constructs.Construct
-	PlugService() awsecspatterns.ApplicationLoadBalancedFargateService
+	PlugGranteableService() awsiam.IRole
 }
 
 func NewWriterFargate(scope constructs.Construct, id *string, props *WriterFargateProps) WriterTask {

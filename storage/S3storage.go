@@ -1,12 +1,10 @@
 package storage
 
 import (
-	"log"
 	"writer_storage_app/storage/choice"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
-	"github.com/aws/aws-cdk-go/awscdk/v2/awsecspatterns"
-	"github.com/aws/aws-cdk-go/awscdk/v2/awslambda"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awss3"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
@@ -14,7 +12,7 @@ import (
 
 // Plug-in with other constructs
 type S3storageProps struct {
-	PlugWriter any
+	PlugGranteableWriter awsiam.IGrantable
 	//insert props from other constructs
 }
 
@@ -41,30 +39,8 @@ func NewS3storage(scope constructs.Construct, id *string, props *S3storageProps)
 		Destination:      bucket.BucketName(),
 	})
 
-	//TYPE ASSERTION IN ORDER TO KNOW POSSIBLE WRITER AND GRANT PERMISION
-
-	pl, ok := props.PlugWriter.(awslambda.Function)
-
-	if ok {
-		bucket.GrantWrite(pl, jsii.String("*"), jsii.Strings("*"))
-		ch.GrantRead(pl)
-	}
-
-	plserv, ok := props.PlugWriter.(awsecspatterns.ApplicationLoadBalancedFargateService)
-
-	if ok {
-		bucket.GrantWrite(plserv.TaskDefinition().TaskRole(),
-			jsii.String("*"), jsii.Strings("*"))
-		ch.GrantRead(plserv.TaskDefinition().TaskRole())
-	}
-
-	/*
-		type assertion new writer here
-	*/
-
-	if !ok {
-		log.Panicln("You must define a writer for storage solution")
-	}
+	bucket.GrantWrite(props.PlugGranteableWriter, jsii.String("*"), jsii.Strings("*"))
+	ch.GrantRead(props.PlugGranteableWriter)
 
 	return s3storage{this}
 
