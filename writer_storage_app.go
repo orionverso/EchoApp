@@ -80,20 +80,20 @@ func main() {
 
 	app := awscdk.NewApp(nil)
 
-	/*
-		NewWriterStorageAppStackDB(app, "WriterStorageAppStack", &WriterStorageAppStackProps{
-			awscdk.StackProps{
-				Env: env(),
-			},
-		})
-	*/
-
-	NewWriterStorageAppStackFargateS3(app, "WriterStorageAppStack-Fargate-S3-", &WriterStorageAppStackProps{
+	NewWriterStorageAppStackApiLambdaS3(app, "WriterStorageAppStack-Lambda-DB-", &WriterStorageAppStackProps{
 
 		awscdk.StackProps{
 			Env: env(),
 		},
 	})
+	/*
+		NewWriterStorageAppStackFargateS3(app, "WriterStorageAppStack-Fargate-S3-", &WriterStorageAppStackProps{
+
+			awscdk.StackProps{
+				Env: env(),
+			},
+		})
+	*/
 
 	app.Synth(nil)
 }

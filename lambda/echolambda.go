@@ -25,7 +25,7 @@ func handler(ctx context.Context, ev events.APIGatewayProxyRequest) (events.APIG
 		StatusCode:        200,
 		Headers:           map[string]string{},
 		MultiValueHeaders: map[string][]string{},
-		Body:              "Thank you for testing. I am from Lambda!",
+		Body:              "Thank you for take a look. I am from Lambda.See you",
 	}, nil
 }
 

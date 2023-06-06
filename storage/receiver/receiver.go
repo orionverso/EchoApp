@@ -12,8 +12,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
-//Implemeted aws-sdk write to storage services
-
 type Receiver interface {
 	Write(context.Context, string) error
 	GetDestination() *string
@@ -29,7 +27,7 @@ func (s3rv s3receiver) Write(ctx context.Context, st string) error {
 	_, err := s3rv.client.PutObject(ctx, &s3.PutObjectInput{
 		ContentType: aws.String("application/json"),
 		Bucket:      s3rv.destination,
-		Key:         aws.String("Example.json"),
+		Key:         aws.String(randstr(10)),
 		Body:        bytes.NewReader(body),
 	})
 	if err != nil {
@@ -37,6 +35,7 @@ func (s3rv s3receiver) Write(ctx context.Context, st string) error {
 		log.Println(err)
 		return err
 	}
+	log.Println("data delivered")
 	return nil
 }
 
@@ -97,6 +96,5 @@ func GetReceiver(ctx context.Context, cfg aws.Config) (Receiver, error) {
 			destination: dest,
 		}, nil
 	}
-
-	return nil, err
+	return nil, err //nil pointer desreference
 }

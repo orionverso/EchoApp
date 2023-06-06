@@ -10,7 +10,6 @@ import (
 )
 
 type WriterApiLambdaProps struct {
-	//insert props from other constructs
 }
 
 type writerApiLambda struct {
@@ -25,7 +24,6 @@ func (wa writerApiLambda) PlugGranteableFunc() awslambda.Function {
 type WriterFunc interface {
 	constructs.Construct
 	PlugGranteableFunc() awslambda.Function
-	//insert useful method to Do construct
 }
 
 func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApiLambdaProps) WriterFunc {

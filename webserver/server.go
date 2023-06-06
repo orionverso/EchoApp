@@ -32,7 +32,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		clientReceiver.Write(ctx, string(body))
 	}
 
-	fmt.Fprintf(w, "Thanks you for testing. I am from a Container. See you")
+	fmt.Fprintf(w, "Thanks you for take a look. I am from a Container. See you")
 }
 
 func init() {
