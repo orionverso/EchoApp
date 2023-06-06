@@ -1,6 +1,6 @@
-# Welcome to your CDK Go project!
+# Welcome to CDK Go sample
 
-This is a blank project for CDK development with Go.
+This is a project for CDK development with Go.
 
 The `cdk.json` file tells the CDK toolkit how to execute your app.
 
