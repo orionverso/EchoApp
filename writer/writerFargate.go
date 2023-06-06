@@ -11,10 +11,11 @@ import (
 )
 
 type WriterFargateProps struct {
-	//insert props from other constructs
+	//import props from other constructs
 }
 
 type writerFargate struct {
+	//export props to other constructs
 	constructs.Construct
 	service awsecspatterns.ApplicationLoadBalancedFargateService
 }

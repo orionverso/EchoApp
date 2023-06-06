@@ -7,7 +7,8 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-// Plug-in with other constructs
+//Thanks to choice the writers know where they must to write
+
 type ChoiceStorageProps struct {
 	Storage_solution *string
 	Destination      *string
@@ -18,14 +19,11 @@ type choiceStorage struct {
 	constructs.Construct
 	stg  awsssm.StringParameter
 	dest awsssm.StringParameter
-	//lo que quieres compartir con otros constructs
 }
 
 type ChoiceStorage interface {
 	constructs.Construct
 	GrantRead(awsiam.IGrantable)
-	//define geter() para compartir los objetos
-	//ya que new construct devolvera una interface
 }
 
 func NewChoiceStorage(scope constructs.Construct, id *string, props *ChoiceStorageProps) ChoiceStorage {

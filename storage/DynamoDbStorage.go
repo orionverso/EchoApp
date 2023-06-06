@@ -10,23 +10,22 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-// Plug-in with other constructs
 type DynamoDbstorageProps struct {
+	//import
 	PlugGranteableWriter awsiam.IGrantable
 }
 
 type dynamoDbstorage struct {
 	constructs.Construct
-	//insert construct from other resources
+	//export
 }
 
 type DynamoDbstorage interface {
 	constructs.Construct
-	//insert useful method to Do construct
 }
 
 func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbstorageProps) DynamoDbstorage {
-	//implement construct
+
 	this := constructs.NewConstruct(scope, id)
 
 	table := awsdynamodb.NewTable(this, jsii.String("ReceiveEchoTable"), &awsdynamodb.TableProps{

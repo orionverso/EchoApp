@@ -12,9 +12,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
+//Receiver implement writer methods
+
 type Receiver interface {
 	Write(context.Context, string) error
-	GetDestination() *string
 }
 
 type s3receiver struct {
@@ -39,17 +40,9 @@ func (s3rv s3receiver) Write(ctx context.Context, st string) error {
 	return nil
 }
 
-func (s3rv s3receiver) GetDestination() *string {
-	return s3rv.destination
-}
-
 type dynamodbreceiver struct {
 	client      *dynamodb.Client
 	destination *string
-}
-
-func (dbrv dynamodbreceiver) GetDestination() *string {
-	return dbrv.destination
 }
 
 func (dbrv dynamodbreceiver) Write(ctx context.Context, st string) error {
@@ -73,15 +66,20 @@ func GetReceiver(ctx context.Context, cfg aws.Config) (Receiver, error) {
 		Name: aws.String("STORAGE_SOLUTION"),
 	})
 
+	if err != nil {
+		log.Panicln("The writers don't know to write")
+	}
+
 	destout, err := ssmclient.GetParameter(ctx, &ssm.GetParameterInput{
 		Name: clientout.Parameter.Value,
 	})
-	clientType := clientout.Parameter.Value
-	dest := destout.Parameter.Value
 
 	if err != nil {
-		// Handle error
+		log.Panicln("The destination is empty")
 	}
+
+	clientType := clientout.Parameter.Value
+	dest := destout.Parameter.Value
 
 	if aws.ToString(clientType) == "DYNAMODB" {
 		return dynamodbreceiver{
@@ -96,5 +94,5 @@ func GetReceiver(ctx context.Context, cfg aws.Config) (Receiver, error) {
 			destination: dest,
 		}, nil
 	}
-	return nil, err //nil pointer desreference
+	return nil, err
 }

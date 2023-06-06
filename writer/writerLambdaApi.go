@@ -10,9 +10,11 @@ import (
 )
 
 type WriterApiLambdaProps struct {
+	//import props from other constructs
 }
 
 type writerApiLambda struct {
+	//export props to other constructs
 	constructs.Construct
 	writerFunc awslambda.Function
 }
@@ -27,7 +29,6 @@ type WriterFunc interface {
 }
 
 func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApiLambdaProps) WriterFunc {
-	//implement construct
 	this := constructs.NewConstruct(scope, id)
 
 	handler := awslambda.NewFunction(this, jsii.String("EchoLambda--"), &awslambda.FunctionProps{

@@ -10,24 +10,22 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-// Plug-in with other constructs
 type S3storageProps struct {
+	//import
 	PlugGranteableWriter awsiam.IGrantable
-	//insert props from other constructs
 }
 
 type s3storage struct {
 	constructs.Construct
-	//insert construct from other resources
+	//export
 }
 
 type S3storage interface {
 	constructs.Construct
-	//insert useful method to Do construct
 }
 
 func NewS3storage(scope constructs.Construct, id *string, props *S3storageProps) S3storage {
-	//implement construct
+
 	this := constructs.NewConstruct(scope, id)
 
 	bucket := awss3.NewBucket(this, jsii.String("ReceiveEchoBucket"), &awss3.BucketProps{
