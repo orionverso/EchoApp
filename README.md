@@ -19,12 +19,12 @@ philosophy about cdk constructs.
 - S3 bucket
 - DynamoDB
 
-## Flowlines
+## Workflow
 
-![Alt text](/images/lambdas3.png "Lambda-S3")
-![Alt text](/images/lambdadb.png "Lambda-DynamoDB")
-![Alt text](/images/fargates3.png "Fargate-S3")
-![Alt text](/images/fargatedb.png "Fargate-DynamoDB")
+![Alt text](/images/lambdas3ch.png "Lambda-S3")
+![Alt text](/images/lambdadbch.png "Lambda-DynamoDB")
+![Alt text](/images/fargates3ch.png "Fargate-S3")
+![Alt text](/images/fargatedbch.png "Fargate-DynamoDB")
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ npm install -g aws-cdk
 cdk --version
 ```
 
-Put in cdk.json a role with the nesessary permissions
+Put a role in cdk.json with the necessary permissions
 
 ```bash
 {
@@ -51,13 +51,13 @@ Put in cdk.json a role with the nesessary permissions
 Clone the project
 
 ```bash
- git clone https://github.com/orionverso/aws-cdk-sample
+ git clone https://github.com/orionverso/EchoApp
 ```
 
 Go to the project directory
 
 ```bash
-  cd aws-cdk-example
+  cd EchoApp
 ```
 
 Choose one stack in the main function
@@ -129,6 +129,8 @@ way to build in the cloud. Two simple reasons:
   Storage, it increases up to nine possible stacks.
 - The ability to compose. For example, these nine possible stacks may belong to
   high-level component.
+
+Without forgetting that DevOps practices become implementable as well.
 
 ## FAQ
 
