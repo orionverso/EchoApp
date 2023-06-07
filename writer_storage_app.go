@@ -2,6 +2,7 @@ package main
 
 import (
 	"writer_storage_app/component"
+	"writer_storage_app/pipeline"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/jsii-runtime-go"
@@ -18,6 +19,8 @@ func main() {
 				Env: env(),
 			},
 		})
+
+	pipeline.NewPipelineStack(app, jsii.String("ComponentPipeline"), nil)
 
 	app.Synth(nil)
 }
