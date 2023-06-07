@@ -1,7 +1,6 @@
 package main
 
 import (
-	"writer_storage_app/component"
 	"writer_storage_app/pipeline"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
@@ -13,14 +12,8 @@ func main() {
 
 	app := awscdk.NewApp(nil)
 	//This is the model to deploy other stacks
-	component.NewWriterStorageAppStackApiLambdaDB(app, jsii.String("ApiLambdaDB-Component"),
-		&component.WriterStorageAppStackApiLambdaDBProps{
-			awscdk.StackProps{
-				Env: env(),
-			},
-		})
 
-	pipeline.NewPipelineStack(app, jsii.String("ComponentPipeline"), nil)
+	pipeline.NewPipelineStack(app, jsii.String("ComponentPipeline"), &pipeline.PipelineStackProps{})
 
 	app.Synth(nil)
 }

@@ -32,15 +32,19 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 			ConnectionArn: conn.AttrConnectionArn(),
 		})
 
-	buildTemplate := pipelines.NewCodeBuildStep(jsii.String("SynthShellStep"), &pipelines.CodeBuildStepProps{
+	buildTemplate := pipelines.NewCodeBuildStep(jsii.String("SynthStep"), &pipelines.CodeBuildStepProps{
 		Input:    githubRepo,
 		Commands: jsii.Strings("npm install -g aws-cdk", "goenv install 1.19.8", "goenv local 1.19.8", "go get", "cdk synth"),
 	})
 
-	pipelines.NewCodePipeline(stack, jsii.String("WriterStorage-PipelineStack"), &pipelines.CodePipelineProps{
+	pipe := pipelines.NewCodePipeline(stack, jsii.String("WriterStorage-PipelineStack"), &pipelines.CodePipelineProps{
 		PipelineName: jsii.String("EchoAppPipeline"),
 		Synth:        buildTemplate,
 	})
+
+	deploy := EchoAppPipelineStage(stack, jsii.String("ApiLambdaDynamoDbComponent"), nil)
+
+	pipe.AddStage(deploy, nil)
 
 	return stack
 }
