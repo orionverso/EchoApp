@@ -4,6 +4,8 @@ github.com/aws/aws-cdk-go/awscdk v1.203.0-devpreview h1:L/rUYayNyUkAr19jchIo0MrV
 github.com/aws/aws-cdk-go/awscdk v1.203.0-devpreview/go.mod h1:HPs15vMAudAJZXOxjlyL2Vfq/SdIdOuKOkb7m0vrQL8=
 github.com/aws/aws-cdk-go/awscdk/v2 v2.81.0 h1:FKEhLX/R3kaq+n1762aDopfSt86pAqb7hNx0jMlJYH0=
 github.com/aws/aws-cdk-go/awscdk/v2 v2.81.0/go.mod h1:Jyy27U909IuC6bKytIkrHSt0/Hlp3Aq2uVx8L9H3UKg=
+github.com/aws/aws-cdk-go/awscdk/v2 v2.83.0 h1:+eZIwoSwYjhJvgPPJE5mx7xJokqniUn2VGXbC+6xgCo=
+github.com/aws/aws-cdk-go/awscdk/v2 v2.83.0/go.mod h1:Jyy27U909IuC6bKytIkrHSt0/Hlp3Aq2uVx8L9H3UKg=
 github.com/aws/aws-lambda-go v1.41.0 h1:l/5fyVb6Ud9uYd411xdHZzSf2n86TakxzpvIoz7l+3Y=
 github.com/aws/aws-lambda-go v1.41.0/go.mod h1:jwFe2KmMsHmffA1X2R09hH6lFzJQxzI8qK17ewzbQMM=
 github.com/aws/aws-sdk-go-v2 v1.18.0 h1:882kkTpSFhdgYRKVZ/VCgf7sd0ru57p2JCxz4/oN5RY=

@@ -1,91 +1,23 @@
 package main
 
 import (
-	"writer_storage_app/storage"
-	"writer_storage_app/writer"
+	"writer_storage_app/component"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
-	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
-
-type WriterStorageAppStackProps struct {
-	awscdk.StackProps
-}
-
-func NewWriterStorageAppStackApiLambdaDB(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
-	var sprops awscdk.StackProps
-	if props != nil {
-		sprops = props.StackProps
-	}
-	stack := awscdk.NewStack(scope, &id, &sprops)
-
-	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
-
-	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
-		PlugGranteableWriter: wr.PlugGranteableFunc(),
-	})
-
-	return stack
-}
-
-func NewWriterStorageAppStackApiLambdaS3(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
-	var sprops awscdk.StackProps
-	if props != nil {
-		sprops = props.StackProps
-	}
-	stack := awscdk.NewStack(scope, &id, &sprops)
-
-	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
-
-	storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
-		PlugGranteableWriter: wr.PlugGranteableFunc(),
-	})
-
-	return stack
-}
-
-func NewWriterStorageAppStackFargateS3(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
-	var sprops awscdk.StackProps
-	if props != nil {
-		sprops = props.StackProps
-	}
-	stack := awscdk.NewStack(scope, &id, &sprops)
-
-	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
-
-	storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
-		PlugGranteableWriter: wr.PlugGranteableService(),
-	})
-	return stack
-}
-
-func NewWriterStorageAppStackFargateDB(scope constructs.Construct, id string, props *WriterStorageAppStackProps) awscdk.Stack {
-	var sprops awscdk.StackProps
-	if props != nil {
-		sprops = props.StackProps
-	}
-	stack := awscdk.NewStack(scope, &id, &sprops)
-
-	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
-
-	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
-		PlugGranteableWriter: wr.PlugGranteableService(),
-	})
-	return stack
-}
 
 func main() {
 	defer jsii.Close()
 
 	app := awscdk.NewApp(nil)
 	//This is the model to deploy other stacks
-	NewWriterStorageAppStackApiLambdaDB(app, "WriterStorageAppStack-Lambda-DB-", &WriterStorageAppStackProps{
-
-		awscdk.StackProps{
-			Env: env(),
-		},
-	})
+	component.NewWriterStorageAppStackApiLambdaDB(app, jsii.String("ApiLambdaDB-Component"),
+		&component.WriterStorageAppStackApiLambdaDBProps{
+			awscdk.StackProps{
+				Env: env(),
+			},
+		})
 
 	app.Synth(nil)
 }
