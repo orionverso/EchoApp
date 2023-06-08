@@ -9,6 +9,7 @@ import (
 
 type EchoAppPipelineStageProps struct {
 	awscdk.StageProps
+	Cpt component.Component
 }
 
 func EchoAppPipelineStage(scope constructs.Construct, id *string, props *EchoAppPipelineStageProps) awscdk.Stage {
@@ -17,8 +18,8 @@ func EchoAppPipelineStage(scope constructs.Construct, id *string, props *EchoApp
 		sprops = props.StageProps
 	}
 	stage := awscdk.NewStage(scope, id, &sprops)
-
-	component.NewWriterStorageAppStackApiLambdaDB(stage, id, nil)
+	//uncouple
+	props.Cpt.NewComponentStack(stage, id, awscdk.StackProps{})
 
 	return stage
 }

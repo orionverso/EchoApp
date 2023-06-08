@@ -1,6 +1,8 @@
 package pipeline
 
 import (
+	"writer_storage_app/component"
+
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awscodestarconnections"
 	"github.com/aws/aws-cdk-go/awscdk/v2/pipelines"
@@ -10,6 +12,7 @@ import (
 
 type PipelineStackProps struct {
 	awscdk.StackProps
+	Cpt component.Component
 }
 
 func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineStackProps) awscdk.Stack {
@@ -42,7 +45,7 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 		Synth:        buildTemplate,
 	})
 
-	deploy := EchoAppPipelineStage(stack, jsii.String("ApiLambdaDynamoDbComponent"), nil)
+	deploy := EchoAppPipelineStage(stack, jsii.String("ComponentStack"), &EchoAppPipelineStageProps{Cpt: props.Cpt})
 
 	pipe.AddStage(deploy, nil)
 
