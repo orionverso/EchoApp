@@ -30,7 +30,7 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 	//You must accepted connection manually
 	//https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-github.html#connections-github-cli
 	githubRepo := pipelines.CodePipelineSource_Connection(jsii.String("orionverso/EchoApp"),
-		jsii.String("main"),
+		jsii.String("dev"),
 		&pipelines.ConnectionSourceOptions{
 			ConnectionArn: conn.AttrConnectionArn(),
 		})
