@@ -9,6 +9,9 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
+type FargateS3Component struct {
+}
+
 type WriterStorageAppStackFargateS3Props struct {
 	awscdk.StackProps
 }
@@ -26,4 +29,14 @@ func NewWriterStorageAppStackFargateS3(scope constructs.Construct, id *string, p
 		PlugGranteableWriter: wr.PlugGranteableService(),
 	})
 	return stack
+}
+
+func (cpt FargateS3Component) NewComponentStack(scope constructs.Construct, id *string, props awscdk.StackProps) awscdk.Stack {
+	return NewWriterStorageAppStackFargateS3(scope, id, &WriterStorageAppStackFargateS3Props{props})
+}
+
+func (cpt FargateS3Component) PlugComponent() Component {
+	var component Component
+	component = cpt
+	return component
 }
