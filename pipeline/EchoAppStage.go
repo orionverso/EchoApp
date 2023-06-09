@@ -19,7 +19,8 @@ func EchoAppPipelineStage(scope constructs.Construct, id *string, props *EchoApp
 	}
 	stage := awscdk.NewStage(scope, id, &sprops)
 	//uncouple
-	props.Cpt.NewComponentStack(stage, id, awscdk.StackProps{})
+	props.Cpt.NewComponentStack(stage, id,
+		awscdk.StackProps{})
 
 	return stage
 }

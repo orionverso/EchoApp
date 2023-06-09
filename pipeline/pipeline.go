@@ -11,17 +11,18 @@ import (
 )
 
 type PipelineStackProps struct {
-	awscdk.StackProps
-	Cpt component.Component
+	DevStackProps  awscdk.StackProps
+	ProdStackProps awscdk.StackProps
+	Cpt            component.Component
 }
 
 func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineStackProps) awscdk.Stack {
 	var sprops awscdk.StackProps
 	if props != nil {
-		sprops = props.StackProps
+		sprops = props.DevStackProps
 	}
 	stack := awscdk.NewStack(scope, id, &sprops)
-
+	//Connect to GitHub
 	conn := awscodestarconnections.NewCfnConnection(stack, jsii.String("CodestarConnectionToGithub"),
 		&awscodestarconnections.CfnConnectionProps{
 			ConnectionName: jsii.String("GithubConnection"),
@@ -31,6 +32,7 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 	//https://docs.aws.amazon.com/codepipeline/latest/userguide/connections-github.html#connections-github-cli
 	githubRepo := pipelines.CodePipelineSource_Connection(jsii.String("orionverso/EchoApp"),
 		jsii.String("dev"),
+
 		&pipelines.ConnectionSourceOptions{
 			ConnectionArn: conn.AttrConnectionArn(),
 		})
@@ -41,13 +43,29 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 	})
 
 	pipe := pipelines.NewCodePipeline(stack, jsii.String("WriterStorage-PipelineStack"), &pipelines.CodePipelineProps{
-		PipelineName: jsii.String("EchoAppPipeline"),
-		Synth:        buildTemplate,
+		PipelineName:     jsii.String("EchoAppPipeline"),
+		Synth:            buildTemplate,
+		CrossAccountKeys: jsii.Bool(true),
 	})
 
-	deploy := EchoAppPipelineStage(stack, jsii.String("ComponentStack"), &EchoAppPipelineStageProps{Cpt: props.Cpt})
+	//Development account deploy
+	deployDev := EchoAppPipelineStage(stack, jsii.String("ComponentStackDev"), &EchoAppPipelineStageProps{
+		StageProps: awscdk.StageProps{},
+		Cpt:        props.Cpt})
 
-	pipe.AddStage(deploy, nil)
+	pipe.AddStage(deployDev, nil)
+
+	//Production account deploy
+
+	stackprod := awscdk.NewStack(scope, jsii.String("ComponentPipelineProd"), &awscdk.StackProps{
+		Env: props.ProdStackProps.Env,
+	})
+
+	deployProd := EchoAppPipelineStage(stackprod, jsii.String("ComponentStackProd"), &EchoAppPipelineStageProps{
+		StageProps: awscdk.StageProps{Env: props.ProdStackProps.Env},
+		Cpt:        props.Cpt})
+
+	pipe.AddStage(deployProd, nil)
 
 	return stack
 }
