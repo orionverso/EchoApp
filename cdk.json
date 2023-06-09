@@ -1,6 +1,5 @@
 {
   "app": "go mod download && go run writer_storage_app.go",
-  "profile": "cdk-role",
   "watch": {
     "include": ["**"],
     "exclude": ["README.md", "cdk*.json", "go.mod", "go.sum", "**/*test.go"]

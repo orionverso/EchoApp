@@ -57,9 +57,7 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 
 	//Production account deploy
 
-	stackprod := awscdk.NewStack(scope, jsii.String("ComponentPipelineProd"), &awscdk.StackProps{
-		Env: props.ProdStackProps.Env,
-	})
+	stackprod := awscdk.NewStack(scope, jsii.String("ComponentPipelineProd"), &props.ProdStackProps)
 
 	deployProd := EchoAppPipelineStage(stackprod, jsii.String("ComponentStackProd"), &EchoAppPipelineStageProps{
 		StageProps: awscdk.StageProps{Env: props.ProdStackProps.Env},
