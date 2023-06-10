@@ -39,8 +39,9 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 		})
 
 	buildTemplate := pipelines.NewCodeBuildStep(jsii.String("SynthStep"), &pipelines.CodeBuildStepProps{
-		Input:    githubRepo,
-		Commands: jsii.Strings("npm install -g aws-cdk", "goenv install 1.19.8", "goenv local 1.19.8", "go get", "cdk synth"),
+		Input: githubRepo,
+		Commands: jsii.Strings("npm install -g aws-cdk", "goenv install 1.19.8", "goenv local 1.19.8", "go get",
+			"cd lambda && ./compile.sh handler echolambda.go; cd ..", "cdk synth"),
 		Env: &map[string]*string{
 			"CDK_DEV_REGION":   sprops.Env.Region,
 			"CDK_DEV_ACCOUNT":  sprops.Env.Account,
