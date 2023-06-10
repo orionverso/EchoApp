@@ -41,6 +41,12 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 	buildTemplate := pipelines.NewCodeBuildStep(jsii.String("SynthStep"), &pipelines.CodeBuildStepProps{
 		Input:    githubRepo,
 		Commands: jsii.Strings("npm install -g aws-cdk", "goenv install 1.19.8", "goenv local 1.19.8", "go get", "cdk synth"),
+		Env: &map[string]*string{
+			"CDK_DEV_REGION":   sprops.Env.Region,
+			"CDK_DEV_ACCOUNT":  sprops.Env.Account,
+			"CDK_PROD_REGION":  props.ProdStackProps.Env.Region,
+			"CDK_PROD_ACCOUNT": props.ProdStackProps.Env.Account,
+		},
 	})
 
 	pipe := pipelines.NewCodePipeline(stack, jsii.String("WriterStorage-PipelineStack"), &pipelines.CodePipelineProps{
@@ -65,7 +71,13 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 		Cpt:        props.Cpt,
 	})
 
-	pipe.AddStage(deployProd, nil)
+	pipe.AddStage(deployProd, &pipelines.AddStageOpts{
+		Pre: &[]pipelines.Step{
+			pipelines.NewManualApprovalStep(jsii.String("PromoteComponentToProduction"), &pipelines.ManualApprovalStepProps{
+				Comment: jsii.String("LAST CHECK BEFORE PRODUCTION"),
+			}),
+		},
+	})
 
 	return stack
 }
