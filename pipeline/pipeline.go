@@ -21,6 +21,7 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 	if props != nil {
 		sprops = props.DevStackProps
 	}
+
 	stack := awscdk.NewStack(scope, id, &sprops)
 	//Connect to GitHub
 	conn := awscodestarconnections.NewCfnConnection(stack, jsii.String("CodestarConnectionToGithub"),
@@ -50,18 +51,19 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 
 	//Development account deploy
 	deployDev := EchoAppPipelineStage(stack, jsii.String("ComponentStackDev"), &EchoAppPipelineStageProps{
-		StageProps: awscdk.StageProps{},
+		stageprops: &awscdk.StageProps{Env: sprops.Env},
+		CptProps:   &awscdk.StackProps{Env: sprops.Env},
 		Cpt:        props.Cpt})
 
 	pipe.AddStage(deployDev, nil)
 
 	//Production account deploy
 
-	stackprod := awscdk.NewStack(scope, jsii.String("ComponentPipelineProd"), &props.ProdStackProps)
-
-	deployProd := EchoAppPipelineStage(stackprod, jsii.String("ComponentStackProd"), &EchoAppPipelineStageProps{
-		StageProps: awscdk.StageProps{Env: props.ProdStackProps.Env},
-		Cpt:        props.Cpt})
+	deployProd := EchoAppPipelineStage(stack, jsii.String("ComponentStackProd"), &EchoAppPipelineStageProps{
+		stageprops: &awscdk.StageProps{Env: props.ProdStackProps.Env},
+		CptProps:   &awscdk.StackProps{Env: props.ProdStackProps.Env},
+		Cpt:        props.Cpt,
+	})
 
 	pipe.AddStage(deployProd, nil)
 

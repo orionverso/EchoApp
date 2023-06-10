@@ -8,19 +8,20 @@ import (
 )
 
 type EchoAppPipelineStageProps struct {
-	awscdk.StageProps
-	Cpt component.Component
+	stageprops *awscdk.StageProps
+	CptProps   *awscdk.StackProps
+	Cpt        component.Component
 }
 
 func EchoAppPipelineStage(scope constructs.Construct, id *string, props *EchoAppPipelineStageProps) awscdk.Stage {
 	var sprops awscdk.StageProps
 	if props != nil {
-		sprops = props.StageProps
+		sprops = *props.stageprops
 	}
 	stage := awscdk.NewStage(scope, id, &sprops)
-	//uncouple
+	//uncouple component
 	props.Cpt.NewComponentStack(stage, id,
-		awscdk.StackProps{})
+		*props.CptProps)
 
 	return stage
 }
