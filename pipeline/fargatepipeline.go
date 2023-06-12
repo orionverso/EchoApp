@@ -10,13 +10,13 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type PipelineStackProps struct {
+type FargatePipelineStackProps struct {
 	DevStackProps  awscdk.StackProps
 	ProdStackProps awscdk.StackProps
 	Cpt            component.Component
 }
 
-func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineStackProps) awscdk.Stack {
+func NewFargatePipelineStack(scope constructs.Construct, id *string, props *FargatePipelineStackProps) awscdk.Stack {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.DevStackProps
@@ -41,7 +41,7 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 	buildTemplate := pipelines.NewCodeBuildStep(jsii.String("SynthStep"), &pipelines.CodeBuildStepProps{
 		Input: githubRepo,
 		Commands: jsii.Strings("npm install -g aws-cdk", "goenv install 1.19.8", "goenv local 1.19.8", "go get",
-			"cd lambda && ./compile.sh handler echolambda.go; cd ..", "cdk synth"),
+			"cdk synth"),
 		Env: &map[string]*string{
 			"CDK_DEV_REGION":   sprops.Env.Region,
 			"CDK_DEV_ACCOUNT":  sprops.Env.Account,
@@ -50,14 +50,14 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 		},
 	})
 
-	pipe := pipelines.NewCodePipeline(stack, jsii.String("WriterStorage-PipelineStack"), &pipelines.CodePipelineProps{
-		PipelineName:     jsii.String("EchoAppPipeline"),
+	pipe := pipelines.NewCodePipeline(stack, jsii.String("WriterStorage-fargate-PipelineStack"), &pipelines.CodePipelineProps{
+		PipelineName:     jsii.String("EchoAppPipeline-fargate"),
 		Synth:            buildTemplate,
 		CrossAccountKeys: jsii.Bool(true),
 	})
 
 	//Development account deploy
-	deployDev := EchoAppPipelineStage(stack, jsii.String("ComponentStackDev"), &EchoAppPipelineStageProps{
+	deployDev := EchoAppPipelineStage(stack, jsii.String("FargateComponentStackDev"), &EchoAppPipelineStageProps{
 		stageprops: &awscdk.StageProps{Env: sprops.Env},
 		CptProps:   &awscdk.StackProps{Env: sprops.Env},
 		Cpt:        props.Cpt})
@@ -66,7 +66,7 @@ func NewPipelineStack(scope constructs.Construct, id *string, props *PipelineSta
 
 	//Production account deploy
 
-	deployProd := EchoAppPipelineStage(stack, jsii.String("ComponentStackProd"), &EchoAppPipelineStageProps{
+	deployProd := EchoAppPipelineStage(stack, jsii.String("FargateComponentStackProd"), &EchoAppPipelineStageProps{
 		stageprops: &awscdk.StageProps{Env: props.ProdStackProps.Env},
 		CptProps:   &awscdk.StackProps{Env: props.ProdStackProps.Env},
 		Cpt:        props.Cpt,

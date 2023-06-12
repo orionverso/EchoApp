@@ -14,9 +14,19 @@ func main() {
 
 	app := awscdk.NewApp(nil)
 	//This is the model to deploy other stacks
-	var cpt component.ApiLambdaDBComponent
+	/*
+		var cpt component.ApiLambdaDBComponent
 
-	pipeline.NewPipelineStack(app, jsii.String("ComponentPipelineDev"), &pipeline.PipelineStackProps{
+		pipeline.NewLambdaPipelineStack()(app, jsii.String("ComponentPipelineDev"), &pipeline.PipelineStackProps{
+			DevStackProps:  awscdk.StackProps{Env: DevEnv()},
+			ProdStackProps: awscdk.StackProps{Env: ProdEnv()},
+			Cpt:            cpt.PlugComponent(),
+		})
+	*/
+
+	var cpt component.FargateS3Component
+
+	pipeline.NewFargatePipelineStack(app, jsii.String("FargateComponentPipelineDev"), &pipeline.FargatePipelineStackProps{
 		DevStackProps:  awscdk.StackProps{Env: DevEnv()},
 		ProdStackProps: awscdk.StackProps{Env: ProdEnv()},
 		Cpt:            cpt.PlugComponent(),
