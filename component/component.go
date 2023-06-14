@@ -5,7 +5,11 @@ import (
 	"github.com/aws/constructs-go/constructs/v10"
 )
 
+type ComponentProps struct {
+	awscdk.StackProps
+}
+
 type Component interface {
-	NewComponentStack(constructs.Construct, *string, awscdk.StackProps) awscdk.Stack
+	NewComponentStack(constructs.Construct, *string, *ComponentProps) awscdk.Stack
 	PlugComponent() Component
 }

@@ -9,11 +9,15 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
+type ApiLambdaDBComponentProps struct {
+	awscdk.StackProps
+}
+
 type ApiLambdaDBComponent struct {
 }
 
 type WriterStorageAppStackApiLambdaDBProps struct {
-	awscdk.StackProps
+	ApiLambdaDBComponentProps
 }
 
 func NewWriterStorageAppStackApiLambdaDB(scope constructs.Construct, id *string, props *WriterStorageAppStackApiLambdaDBProps) awscdk.Stack {
@@ -32,8 +36,12 @@ func NewWriterStorageAppStackApiLambdaDB(scope constructs.Construct, id *string,
 	return stack
 }
 
-func (cpt ApiLambdaDBComponent) NewComponentStack(scope constructs.Construct, id *string, props awscdk.StackProps) awscdk.Stack {
-	return NewWriterStorageAppStackApiLambdaDB(scope, id, &WriterStorageAppStackApiLambdaDBProps{props})
+func (cpt ApiLambdaDBComponent) NewComponentStack(scope constructs.Construct, id *string, props *ComponentProps) awscdk.Stack {
+	//transgress layers
+	lbdb := ApiLambdaDBComponentProps{props.StackProps}
+	ws := WriterStorageAppStackApiLambdaDBProps{lbdb}
+	//
+	return NewWriterStorageAppStackApiLambdaDB(scope, id, &ws)
 }
 
 func (cpt ApiLambdaDBComponent) PlugComponent() Component {

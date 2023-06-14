@@ -11,15 +11,15 @@ import (
 )
 
 type LambdaPipelineStackProps struct {
-	DevStackProps  awscdk.StackProps
-	ProdStackProps awscdk.StackProps
-	Cpt            component.Component
+	ProdEnv  *awscdk.Environment
+	CptProps component.ComponentProps
+	Cpt      component.Component
 }
 
 func NewLambdaPipelineStack(scope constructs.Construct, id *string, props *LambdaPipelineStackProps) awscdk.Stack {
 	var sprops awscdk.StackProps
 	if props != nil {
-		sprops = props.DevStackProps
+		sprops = props.CptProps.StackProps
 	}
 
 	stack := awscdk.NewStack(scope, id, &sprops)
@@ -45,8 +45,8 @@ func NewLambdaPipelineStack(scope constructs.Construct, id *string, props *Lambd
 		Env: &map[string]*string{
 			"CDK_DEV_REGION":   sprops.Env.Region,
 			"CDK_DEV_ACCOUNT":  sprops.Env.Account,
-			"CDK_PROD_REGION":  props.ProdStackProps.Env.Region,
-			"CDK_PROD_ACCOUNT": props.ProdStackProps.Env.Account,
+			"CDK_PROD_REGION":  props.ProdEnv.Region,
+			"CDK_PROD_ACCOUNT": props.ProdEnv.Account,
 		},
 	})
 
@@ -58,17 +58,19 @@ func NewLambdaPipelineStack(scope constructs.Construct, id *string, props *Lambd
 
 	//Development account deploy
 	deployDev := EchoAppPipelineStage(stack, jsii.String("ComponentStackDev"), &EchoAppPipelineStageProps{
-		stageprops: &awscdk.StageProps{Env: sprops.Env},
-		CptProps:   &awscdk.StackProps{Env: sprops.Env},
+		stageprops: awscdk.StageProps{Env: sprops.Env},
+		CptProps:   props.CptProps,
 		Cpt:        props.Cpt})
 
 	pipe.AddStage(deployDev, nil)
 
 	//Production account deploy
 
+	props.CptProps.Env = props.ProdEnv
+
 	deployProd := EchoAppPipelineStage(stack, jsii.String("ComponentStackProd"), &EchoAppPipelineStageProps{
-		stageprops: &awscdk.StageProps{Env: props.ProdStackProps.Env},
-		CptProps:   &awscdk.StackProps{Env: props.ProdStackProps.Env},
+		stageprops: awscdk.StageProps{Env: props.ProdEnv},
+		CptProps:   props.CptProps,
 		Cpt:        props.Cpt,
 	})
 

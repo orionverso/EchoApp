@@ -9,11 +9,15 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
+type FargateDBComponentProps struct {
+	awscdk.StackProps
+}
+
 type FargateDBComponent struct {
 }
 
 type WriterStorageAppStackFargateDBProps struct {
-	awscdk.StackProps
+	FargateDBComponentProps
 }
 
 func NewWriterStorageAppStackFargateDB(scope constructs.Construct, id *string, props *WriterStorageAppStackFargateDBProps) awscdk.Stack {
@@ -26,13 +30,18 @@ func NewWriterStorageAppStackFargateDB(scope constructs.Construct, id *string, p
 	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
 
 	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
+
 		PlugGranteableWriter: wr.PlugGranteableService(),
 	})
 	return stack
 }
 
-func (cpt FargateDBComponent) NewComponentStack(scope constructs.Construct, id *string, props awscdk.StackProps) awscdk.Stack {
-	return NewWriterStorageAppStackFargateDB(scope, id, &WriterStorageAppStackFargateDBProps{props})
+func (cpt FargateDBComponent) NewComponentStack(scope constructs.Construct, id *string, props *ComponentProps) awscdk.Stack {
+	//transgress layers
+	fgdb := FargateDBComponentProps{props.StackProps}
+	ws := WriterStorageAppStackFargateDBProps{fgdb}
+	//
+	return NewWriterStorageAppStackFargateDB(scope, id, &ws)
 }
 
 func (cpt FargateDBComponent) PlugComponent() Component {

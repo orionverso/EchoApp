@@ -13,24 +13,22 @@ func main() {
 	defer jsii.Close()
 
 	app := awscdk.NewApp(nil)
-	//This is the model to deploy other stacks
-	/*
-		var cpt component.ApiLambdaDBComponent
+	var cptlambda component.ApiLambdaDBComponent
 
-		pipeline.NewLambdaPipelineStack()(app, jsii.String("ComponentPipelineDev"), &pipeline.PipelineStackProps{
-			DevStackProps:  awscdk.StackProps{Env: DevEnv()},
-			ProdStackProps: awscdk.StackProps{Env: ProdEnv()},
-			Cpt:            cpt.PlugComponent(),
+	pipeline.NewLambdaPipelineStack(app, jsii.String("LambdaComponentPipelineDev"), &pipeline.LambdaPipelineStackProps{
+		ProdEnv:  DevEnv(),
+		CptProps: component.ComponentProps{awscdk.StackProps{Env: DevEnv()}},
+		Cpt:      cptlambda.PlugComponent(),
+	})
+	/*
+		var cptfargate component.FargateS3Component
+
+		pipeline.NewFargatePipelineStack(app, jsii.String("FargateComponentPipelineDev"), &pipeline.FargatePipelineStackProps{
+			ProdEnv:  DevEnv(),
+			CptProps: component.ComponentProps{awscdk.StackProps{Env: DevEnv()}},
+			Cpt:      cptfargate.PlugComponent(),
 		})
 	*/
-
-	var cpt component.FargateS3Component
-
-	pipeline.NewFargatePipelineStack(app, jsii.String("FargateComponentPipelineDev"), &pipeline.FargatePipelineStackProps{
-		DevStackProps:  awscdk.StackProps{Env: DevEnv()},
-		ProdStackProps: awscdk.StackProps{Env: ProdEnv()},
-		Cpt:            cpt.PlugComponent(),
-	})
 
 	app.Synth(nil)
 }
