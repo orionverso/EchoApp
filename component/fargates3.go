@@ -9,18 +9,31 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type FargateS3ComponentProps struct {
+type FargateS3Props struct {
 	awscdk.StackProps
 }
 
-type FargateS3Component struct {
+type fargateS3 struct {
+	awscdk.Stack
+	fargateService writer.WriterFargate
+	s3Storage      storage.S3Storage
 }
 
-type WriterStorageAppStackFargateS3Props struct {
-	FargateS3ComponentProps
+func (fg fargateS3) Fargate() writer.WriterFargate {
+	return fg.fargateService
 }
 
-func NewWriterStorageAppStackFargateS3(scope constructs.Construct, id *string, props *WriterStorageAppStackFargateS3Props) awscdk.Stack {
+func (fg fargateS3) S3Storage() storage.S3Storage {
+	return fg.s3Storage
+}
+
+type FargateS3 interface {
+	awscdk.Stack
+	Fargate() writer.WriterFargate
+	S3Storage() storage.S3Storage
+}
+
+func NewFargateS3(scope constructs.Construct, id *string, props *FargateS3Props) FargateS3 {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.StackProps
@@ -29,20 +42,9 @@ func NewWriterStorageAppStackFargateS3(scope constructs.Construct, id *string, p
 
 	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
 
-	storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
-		PlugGranteableWriter: wr.PlugGranteableService(),
+	st := storage.NewS3Storage(stack, jsii.String("S3Storage"), &storage.S3StorageProps{
+		RoleWriter: wr.FargateService().TaskDefinition().TaskRole(),
 	})
-	return stack
-}
 
-func (cpt FargateS3Component) NewComponentStack(scope constructs.Construct, id *string, props *ComponentProps) awscdk.Stack {
-	fgs3 := FargateS3ComponentProps{props.StackProps}
-	ws := WriterStorageAppStackFargateS3Props{fgs3}
-	return NewWriterStorageAppStackFargateS3(scope, id, &ws)
-}
-
-func (cpt FargateS3Component) PlugComponent() Component {
-	var component Component
-	component = cpt
-	return component
+	return fargateS3{stack, wr, st}
 }

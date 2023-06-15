@@ -9,18 +9,31 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type ApiLambdaS3ComponentProps struct {
+type ApiLambdaS3Props struct {
 	awscdk.StackProps
 }
 
-type ApiLambdaS3Component struct {
+type apiLambdaS3 struct {
+	awscdk.Stack
+	apiLambda writer.WriterApiLambda
+	s3Storage storage.S3Storage
 }
 
-type WriterStorageAppStackApiLambdaS3Props struct {
-	ApiLambdaS3ComponentProps
+func (ap apiLambdaS3) ApiLambda() writer.WriterApiLambda {
+	return ap.apiLambda
 }
 
-func NewWriterStorageAppStackApiLambdaS3(scope constructs.Construct, id *string, props *WriterStorageAppStackApiLambdaS3Props) awscdk.Stack {
+func (ap apiLambdaS3) S3Storage() storage.S3Storage {
+	return ap.s3Storage
+}
+
+type ApiLambdaS3 interface {
+	awscdk.Stack
+	ApiLambda() writer.WriterApiLambda
+	S3Storage() storage.S3Storage
+}
+
+func NewApiLambdaS3(scope constructs.Construct, id *string, props *ApiLambdaS3Props) ApiLambdaS3 {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.StackProps
@@ -29,23 +42,9 @@ func NewWriterStorageAppStackApiLambdaS3(scope constructs.Construct, id *string,
 
 	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
 
-	storage.NewS3storage(stack, jsii.String("S3Storage"), &storage.S3storageProps{
-		PlugGranteableWriter: wr.PlugGranteableFunc(),
+	s3 := storage.NewS3Storage(stack, jsii.String("S3Storage"), &storage.S3StorageProps{
+		RoleWriter: wr.Function().Role(),
 	})
 
-	return stack
-}
-
-func (cpt ApiLambdaS3Component) NewComponentStack(scope constructs.Construct, id *string, props *ComponentProps) awscdk.Stack {
-	//trangress layers
-	lbs3 := ApiLambdaS3ComponentProps{props.StackProps}
-	ws := WriterStorageAppStackApiLambdaS3Props{lbs3}
-	//
-	return NewWriterStorageAppStackApiLambdaS3(scope, id, &ws)
-}
-
-func (cpt ApiLambdaS3Component) PlugComponent() Component {
-	var component Component
-	component = cpt
-	return component
+	return apiLambdaS3{stack, wr, s3}
 }

@@ -5,31 +5,39 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecr"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecs"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecspatterns"
-	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
 
 type WriterFargateProps struct {
-	//import props from other constructs
 }
 
 type writerFargate struct {
-	//export props to other constructs
 	constructs.Construct
-	service awsecspatterns.ApplicationLoadBalancedFargateService
+	repository                            awsecr.Repository
+	applicationLoadBalancedFargateService awsecspatterns.ApplicationLoadBalancedFargateService
 }
 
-func (wr writerFargate) PlugGranteableService() awsiam.IRole {
-	return wr.service.TaskDefinition().TaskRole()
+func (wf writerFargate) Repository() awsecr.Repository {
+	return wf.repository
 }
 
-type WriterTask interface {
+func (wf writerFargate) FargateService() awsecspatterns.ApplicationLoadBalancedFargateService {
+	return wf.applicationLoadBalancedFargateService
+}
+
+func (wf writerFargate) Image() awsecs.EcrImage {
+	return awsecs.AssetImage_FromEcrRepository(wf.repository, jsii.String("latest"))
+}
+
+type WriterFargate interface {
 	constructs.Construct
-	PlugGranteableService() awsiam.IRole
+	Repository() awsecr.Repository
+	FargateService() awsecspatterns.ApplicationLoadBalancedFargateService
+	Image() awsecs.EcrImage
 }
 
-func NewWriterFargate(scope constructs.Construct, id *string, props *WriterFargateProps) WriterTask {
+func NewWriterFargate(scope constructs.Construct, id *string, props *WriterFargateProps) WriterFargate {
 
 	this := constructs.NewConstruct(scope, id)
 
@@ -54,5 +62,5 @@ func NewWriterFargate(scope constructs.Construct, id *string, props *WriterFarga
 		LoadBalancerName: jsii.String("application-lb-name"),
 	})
 
-	return writerFargate{this, fargateservice}
+	return writerFargate{this, repo, fargateservice}
 }

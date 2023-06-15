@@ -9,18 +9,31 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type FargateDBComponentProps struct {
+type FargateDynamoDbProps struct {
 	awscdk.StackProps
 }
 
-type FargateDBComponent struct {
+type fargateDynamoDb struct {
+	awscdk.Stack
+	fargateService writer.WriterFargate
+	dynamoStorage  storage.DynamoDbStorage
 }
 
-type WriterStorageAppStackFargateDBProps struct {
-	FargateDBComponentProps
+func (fg fargateDynamoDb) Fargate() writer.WriterFargate {
+	return fg.fargateService
 }
 
-func NewWriterStorageAppStackFargateDB(scope constructs.Construct, id *string, props *WriterStorageAppStackFargateDBProps) awscdk.Stack {
+func (fg fargateDynamoDb) DynamoStorage() storage.DynamoDbStorage {
+	return fg.dynamoStorage
+}
+
+type FargateDynamoDb interface {
+	awscdk.Stack
+	Fargate() writer.WriterFargate
+	DynamoStorage() storage.DynamoDbStorage
+}
+
+func NewFargateDynamoDb(scope constructs.Construct, id *string, props *FargateDynamoDbProps) FargateDynamoDb {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.StackProps
@@ -29,23 +42,8 @@ func NewWriterStorageAppStackFargateDB(scope constructs.Construct, id *string, p
 
 	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
 
-	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
-
-		PlugGranteableWriter: wr.PlugGranteableService(),
+	st := storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
+		RoleWriter: wr.FargateService().TaskDefinition().TaskRole(),
 	})
-	return stack
-}
-
-func (cpt FargateDBComponent) NewComponentStack(scope constructs.Construct, id *string, props *ComponentProps) awscdk.Stack {
-	//transgress layers
-	fgdb := FargateDBComponentProps{props.StackProps}
-	ws := WriterStorageAppStackFargateDBProps{fgdb}
-	//
-	return NewWriterStorageAppStackFargateDB(scope, id, &ws)
-}
-
-func (cpt FargateDBComponent) PlugComponent() Component {
-	var component Component
-	component = cpt
-	return component
+	return fargateDynamoDb{stack, wr, st}
 }

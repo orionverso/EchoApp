@@ -11,20 +11,30 @@ import (
 )
 
 type DynamoDbstorageProps struct {
-	//import
-	PlugGranteableWriter awsiam.IGrantable
+	RoleWriter awsiam.IRole
 }
 
-type dynamoDbstorage struct {
+type dynamoDbStorage struct {
 	constructs.Construct
-	//export
+	table  awsdynamodb.Table
+	choice choice.ChoiceStorage
 }
 
-type DynamoDbstorage interface {
+func (db dynamoDbStorage) Table() awsdynamodb.Table {
+	return db.table
+}
+
+func (db dynamoDbStorage) Choice() choice.ChoiceStorage {
+	return db.choice
+}
+
+type DynamoDbStorage interface {
 	constructs.Construct
+	Table() awsdynamodb.Table
+	Choice() choice.ChoiceStorage
 }
 
-func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbstorageProps) DynamoDbstorage {
+func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbstorageProps) DynamoDbStorage {
 
 	this := constructs.NewConstruct(scope, id)
 
@@ -41,8 +51,9 @@ func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbs
 		Destination:      table.TableName(),
 	})
 
-	table.GrantWriteData(props.PlugGranteableWriter)
-	ch.GrantRead(props.PlugGranteableWriter)
+	table.GrantWriteData(props.RoleWriter)
+	ch.Storage().GrantRead(props.RoleWriter)
+	ch.Destination().GrantRead(props.RoleWriter)
 
-	return dynamoDbstorage{this}
+	return dynamoDbStorage{this, table, ch}
 }

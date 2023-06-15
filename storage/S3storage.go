@@ -10,21 +10,31 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type S3storageProps struct {
-	//import
-	PlugGranteableWriter awsiam.IGrantable
+type S3StorageProps struct {
+	RoleWriter awsiam.IRole
 }
 
-type s3storage struct {
+type s3Storage struct {
 	constructs.Construct
-	//export
+	bucket awss3.Bucket
+	choice choice.ChoiceStorage
 }
 
-type S3storage interface {
+func (s3 s3Storage) Bucket() awss3.Bucket {
+	return s3.bucket
+}
+
+func (s3 s3Storage) Choice() choice.ChoiceStorage {
+	return s3.choice
+}
+
+type S3Storage interface {
 	constructs.Construct
+	Bucket() awss3.Bucket
+	Choice() choice.ChoiceStorage
 }
 
-func NewS3storage(scope constructs.Construct, id *string, props *S3storageProps) S3storage {
+func NewS3Storage(scope constructs.Construct, id *string, props *S3StorageProps) S3Storage {
 
 	this := constructs.NewConstruct(scope, id)
 
@@ -37,9 +47,10 @@ func NewS3storage(scope constructs.Construct, id *string, props *S3storageProps)
 		Destination:      bucket.BucketName(),
 	})
 
-	bucket.GrantWrite(props.PlugGranteableWriter, jsii.String("*"), jsii.Strings("*"))
-	ch.GrantRead(props.PlugGranteableWriter)
+	bucket.GrantWrite(props.RoleWriter, jsii.String("*"), jsii.Strings("*"))
 
-	return s3storage{this}
+	ch.Storage().GrantRead(props.RoleWriter)
+	ch.Destination().GrantRead(props.RoleWriter)
 
+	return s3Storage{this, bucket, ch}
 }

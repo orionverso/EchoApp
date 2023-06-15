@@ -1,8 +1,6 @@
 package pipeline
 
 import (
-	"writer_storage_app/component"
-
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awscodestarconnections"
 	"github.com/aws/aws-cdk-go/awscdk/v2/pipelines"
@@ -10,17 +8,27 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type LambdaPipelineStackProps struct {
-	ProdEnv  *awscdk.Environment
-	CptProps component.ComponentProps
-	Cpt      component.Component
+type LambdaPipelineProps struct {
+	awscdk.StackProps
+	DevelopmentEnv *awscdk.Environment
+	ProductionEnv  *awscdk.Environment
 }
 
-func NewLambdaPipelineStack(scope constructs.Construct, id *string, props *LambdaPipelineStackProps) awscdk.Stack {
+type lambdaPipeline struct {
+	awscdk.Stack
+}
+
+type LambdaPipeline interface {
+	awscdk.Stack
+}
+
+func NewLambdaPipeline(scope constructs.Construct, id *string, props *LambdaPipelineProps) LambdaPipeline {
 	var sprops awscdk.StackProps
 	if props != nil {
-		sprops = props.CptProps.StackProps
+		sprops = props.StackProps
 	}
+	//Define Enviroment
+	sprops.Env = props.DevelopmentEnv //Be explicit!
 
 	stack := awscdk.NewStack(scope, id, &sprops)
 	//Connect to GitHub
@@ -45,8 +53,8 @@ func NewLambdaPipelineStack(scope constructs.Construct, id *string, props *Lambd
 		Env: &map[string]*string{
 			"CDK_DEV_REGION":   sprops.Env.Region,
 			"CDK_DEV_ACCOUNT":  sprops.Env.Account,
-			"CDK_PROD_REGION":  props.ProdEnv.Region,
-			"CDK_PROD_ACCOUNT": props.ProdEnv.Account,
+			"CDK_PROD_REGION":  props.ProductionEnv.Region,
+			"CDK_PROD_ACCOUNT": props.ProductionEnv.Account,
 		},
 	})
 
@@ -57,21 +65,17 @@ func NewLambdaPipelineStack(scope constructs.Construct, id *string, props *Lambd
 	})
 
 	//Development account deploy
-	deployDev := EchoAppPipelineStage(stack, jsii.String("ComponentStackDev"), &EchoAppPipelineStageProps{
-		stageprops: awscdk.StageProps{Env: sprops.Env},
-		CptProps:   props.CptProps,
-		Cpt:        props.Cpt})
-
+	deployDev := EchoAppStage(stack, jsii.String("ComponentStackDev"), &EchoAppProps{
+		StageProps: awscdk.StageProps{Env: sprops.Env},
+	})
+	//Now, the pipeline can access to component parameters. Component ---> Pipeline , Pipeline -x-> Component
+	//endpointUrl := deployDev.EchoAppComponent().ApiLambda().LambdaRestApi().Url //For example, I can use for check endpoint
 	pipe.AddStage(deployDev, nil)
 
 	//Production account deploy
 
-	props.CptProps.Env = props.ProdEnv
-
-	deployProd := EchoAppPipelineStage(stack, jsii.String("ComponentStackProd"), &EchoAppPipelineStageProps{
-		stageprops: awscdk.StageProps{Env: props.ProdEnv},
-		CptProps:   props.CptProps,
-		Cpt:        props.Cpt,
+	deployProd := EchoAppStage(stack, jsii.String("ComponentStackProd"), &EchoAppProps{
+		StageProps: awscdk.StageProps{Env: props.ProductionEnv},
 	})
 
 	pipe.AddStage(deployProd, &pipelines.AddStageOpts{
@@ -82,5 +86,5 @@ func NewLambdaPipelineStack(scope constructs.Construct, id *string, props *Lambd
 		},
 	})
 
-	return stack
+	return lambdaPipeline{stack}
 }

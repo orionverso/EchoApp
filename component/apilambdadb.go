@@ -9,18 +9,31 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type ApiLambdaDBComponentProps struct {
+type ApiLambdaDynamoDbProps struct {
 	awscdk.StackProps
 }
 
-type ApiLambdaDBComponent struct {
+type apiLambdaDynamoDb struct {
+	awscdk.Stack
+	apiLambda     writer.WriterApiLambda
+	dynamoStorage storage.DynamoDbStorage
 }
 
-type WriterStorageAppStackApiLambdaDBProps struct {
-	ApiLambdaDBComponentProps
+func (ap apiLambdaDynamoDb) ApiLambda() writer.WriterApiLambda {
+	return ap.apiLambda
 }
 
-func NewWriterStorageAppStackApiLambdaDB(scope constructs.Construct, id *string, props *WriterStorageAppStackApiLambdaDBProps) awscdk.Stack {
+func (ap apiLambdaDynamoDb) DynamoStorage() storage.DynamoDbStorage {
+	return ap.dynamoStorage
+}
+
+type ApiLambdaDynamoDb interface {
+	awscdk.Stack
+	ApiLambda() writer.WriterApiLambda
+	DynamoStorage() storage.DynamoDbStorage
+}
+
+func NewApiLambdaDynamoDb(scope constructs.Construct, id *string, props *ApiLambdaDynamoDbProps) ApiLambdaDynamoDb {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.StackProps
@@ -29,23 +42,9 @@ func NewWriterStorageAppStackApiLambdaDB(scope constructs.Construct, id *string,
 
 	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
 
-	storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
-		PlugGranteableWriter: wr.PlugGranteableFunc(),
+	st := storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
+		RoleWriter: wr.Function().Role(),
 	})
 
-	return stack
-}
-
-func (cpt ApiLambdaDBComponent) NewComponentStack(scope constructs.Construct, id *string, props *ComponentProps) awscdk.Stack {
-	//transgress layers
-	lbdb := ApiLambdaDBComponentProps{props.StackProps}
-	ws := WriterStorageAppStackApiLambdaDBProps{lbdb}
-	//
-	return NewWriterStorageAppStackApiLambdaDB(scope, id, &ws)
-}
-
-func (cpt ApiLambdaDBComponent) PlugComponent() Component {
-	var component Component
-	component = cpt
-	return component
+	return apiLambdaDynamoDb{stack, wr, st}
 }

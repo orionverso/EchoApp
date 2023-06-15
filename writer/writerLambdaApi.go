@@ -10,25 +10,35 @@ import (
 )
 
 type WriterApiLambdaProps struct {
-	//import props from other constructs
 }
 
 type writerApiLambda struct {
-	//export props to other constructs
 	constructs.Construct
-	writerFunc awslambda.Function
+	function      awslambda.Function
+	loggroup      awslogs.LogGroup
+	lambdarestapi awsapigateway.LambdaRestApi
 }
 
-func (wa writerApiLambda) PlugGranteableFunc() awslambda.Function {
-	return wa.writerFunc
+func (wa writerApiLambda) Function() awslambda.Function {
+	return wa.function
 }
 
-type WriterFunc interface {
+func (wa writerApiLambda) LogGroup() awslogs.LogGroup {
+	return wa.loggroup
+}
+
+func (wa writerApiLambda) LambdaRestApi() awsapigateway.LambdaRestApi {
+	return wa.lambdarestapi
+}
+
+type WriterApiLambda interface {
 	constructs.Construct
-	PlugGranteableFunc() awslambda.Function
+	Function() awslambda.Function
+	LogGroup() awslogs.LogGroup
+	LambdaRestApi() awsapigateway.LambdaRestApi
 }
 
-func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApiLambdaProps) WriterFunc {
+func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApiLambdaProps) WriterApiLambda {
 	this := constructs.NewConstruct(scope, id)
 
 	handler := awslambda.NewFunction(this, jsii.String("EchoLambda--"), &awslambda.FunctionProps{
@@ -43,7 +53,7 @@ func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApi
 		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
 	})
 
-	awsapigateway.NewLambdaRestApi(this, jsii.String("EndpointWriter"), &awsapigateway.LambdaRestApiProps{
+	apilambdaproxy := awsapigateway.NewLambdaRestApi(this, jsii.String("EndpointWriter"), &awsapigateway.LambdaRestApiProps{
 		CloudWatchRole: jsii.Bool(true),
 		Handler:        handler,
 		DeployOptions: &awsapigateway.StageOptions{
@@ -54,6 +64,5 @@ func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApi
 		},
 	})
 
-	return writerApiLambda{this, handler}
-
+	return writerApiLambda{this, handler, logGroup, apilambdaproxy}
 }

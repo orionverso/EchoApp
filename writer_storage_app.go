@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"writer_storage_app/component"
 	"writer_storage_app/pipeline"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
@@ -13,12 +12,11 @@ func main() {
 	defer jsii.Close()
 
 	app := awscdk.NewApp(nil)
-	var cptlambda component.ApiLambdaDBComponent
 
-	pipeline.NewLambdaPipelineStack(app, jsii.String("LambdaComponentPipelineDev"), &pipeline.LambdaPipelineStackProps{
-		ProdEnv:  DevEnv(),
-		CptProps: component.ComponentProps{awscdk.StackProps{Env: DevEnv()}},
-		Cpt:      cptlambda.PlugComponent(),
+	pipeline.NewLambdaPipeline(app, jsii.String("LambdaComponentPipelineDev"), &pipeline.LambdaPipelineProps{
+		awscdk.StackProps{Env: DevEnv()},
+		DevEnv(),
+		ProdEnv(),
 	})
 	/*
 		var cptfargate component.FargateS3Component
