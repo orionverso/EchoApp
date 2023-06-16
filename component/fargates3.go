@@ -1,6 +1,7 @@
 package component
 
 import (
+	"writer_storage_app/environment"
 	"writer_storage_app/storage"
 	"writer_storage_app/writer"
 
@@ -10,7 +11,9 @@ import (
 )
 
 type FargateS3Props struct {
-	awscdk.StackProps
+	StackProps         awscdk.StackProps
+	WriterFargateProps writer.WriterFargateProps
+	S3StorageProps     storage.S3StorageProps
 }
 
 type fargateS3 struct {
@@ -34,17 +37,29 @@ type FargateS3 interface {
 }
 
 func NewFargateS3(scope constructs.Construct, id *string, props *FargateS3Props) FargateS3 {
-	var sprops awscdk.StackProps
+	var sprops FargateS3Props = FargateS3Props_DEV
 	if props != nil {
-		sprops = props.StackProps
+		sprops = *props
 	}
-	stack := awscdk.NewStack(scope, id, &sprops)
+	stack := awscdk.NewStack(scope, id, &sprops.StackProps)
 
-	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
+	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &sprops.WriterFargateProps)
 
-	st := storage.NewS3Storage(stack, jsii.String("S3Storage"), &storage.S3StorageProps{
-		RoleWriter: wr.FargateService().TaskDefinition().TaskRole(),
-	})
+	sprops.S3StorageProps.RoleWriter = wr.FargateService().TaskDefinition().ExecutionRole()
+
+	st := storage.NewS3Storage(stack, jsii.String("S3Storage"), &sprops.S3StorageProps)
 
 	return fargateS3{stack, wr, st}
+}
+
+var FargateS3Props_DEV FargateS3Props = FargateS3Props{
+	StackProps:         environment.StackProps_DEV,
+	WriterFargateProps: writer.WriterFargateProps_DEV,
+	S3StorageProps:     storage.S3StorageProps_DEV,
+}
+
+var FargateS3Props_PROD FargateS3Props = FargateS3Props{
+	StackProps:         environment.StackProps_PROD,
+	WriterFargateProps: writer.WriterFargateProps_PROD,
+	S3StorageProps:     storage.S3StorageProps_PROD,
 }

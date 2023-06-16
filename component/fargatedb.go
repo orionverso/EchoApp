@@ -1,6 +1,7 @@
 package component
 
 import (
+	"writer_storage_app/environment"
 	"writer_storage_app/storage"
 	"writer_storage_app/writer"
 
@@ -10,7 +11,9 @@ import (
 )
 
 type FargateDynamoDbProps struct {
-	awscdk.StackProps
+	StackProps           awscdk.StackProps
+	WriterFargateProps   writer.WriterFargateProps
+	DynamoDbStorageProps storage.DynamoDbStorageProps
 }
 
 type fargateDynamoDb struct {
@@ -34,16 +37,30 @@ type FargateDynamoDb interface {
 }
 
 func NewFargateDynamoDb(scope constructs.Construct, id *string, props *FargateDynamoDbProps) FargateDynamoDb {
-	var sprops awscdk.StackProps
+	var sprops FargateDynamoDbProps = FargateDynamoDbProps_DEV
 	if props != nil {
-		sprops = props.StackProps
+		sprops = *props
 	}
-	stack := awscdk.NewStack(scope, id, &sprops)
+	stack := awscdk.NewStack(scope, id, &sprops.StackProps)
 
-	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &writer.WriterFargateProps{})
+	wr := writer.NewWriterFargate(stack, jsii.String("TaskWriter"), &sprops.WriterFargateProps)
 
-	st := storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &storage.DynamoDbstorageProps{
-		RoleWriter: wr.FargateService().TaskDefinition().TaskRole(),
-	})
+	sprops.DynamoDbStorageProps.RoleWriter = wr.FargateService().TaskDefinition().ExecutionRole()
+
+	st := storage.NewDynamoDbstorage(stack, jsii.String("DynamoDbStorage"), &sprops.DynamoDbStorageProps)
+
 	return fargateDynamoDb{stack, wr, st}
+}
+
+// CONFIGURATIONS
+var FargateDynamoDbProps_DEV FargateDynamoDbProps = FargateDynamoDbProps{
+	StackProps:           environment.StackProps_DEV,
+	WriterFargateProps:   writer.WriterFargateProps_DEV,
+	DynamoDbStorageProps: storage.DynamoDbStorageProps_DEV,
+}
+
+var FargateDynamoDbProps_PROD FargateDynamoDbProps = FargateDynamoDbProps{
+	StackProps:           environment.StackProps_PROD,
+	WriterFargateProps:   writer.WriterFargateProps_PROD,
+	DynamoDbStorageProps: storage.DynamoDbStorageProps_PROD,
 }

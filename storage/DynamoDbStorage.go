@@ -10,7 +10,10 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type DynamoDbstorageProps struct {
+type DynamoDbStorageProps struct {
+	TableProps         awsdynamodb.TableProps
+	ChoiceStorageProps choice.ChoiceStorageProps
+	//import from interaction with other constructs
 	RoleWriter awsiam.IRole
 }
 
@@ -34,26 +37,46 @@ type DynamoDbStorage interface {
 	Choice() choice.ChoiceStorage
 }
 
-func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbstorageProps) DynamoDbStorage {
+func NewDynamoDbstorage(scope constructs.Construct, id *string, props *DynamoDbStorageProps) DynamoDbStorage {
+	var sprops DynamoDbStorageProps = DynamoDbstorageProps_DEV
+	if props != nil {
+		sprops = *props
+	}
 
 	this := constructs.NewConstruct(scope, id)
 
-	table := awsdynamodb.NewTable(this, jsii.String("ReceiveEchoTable"), &awsdynamodb.TableProps{
-		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("id"),
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
-	})
+	table := awsdynamodb.NewTable(this, jsii.String("ReceiveEchoTable"), &sprops.TableProps)
 
-	ch := choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &choice.ChoiceStorageProps{
-		Storage_solution: jsii.String("DYNAMODB"),
-		Destination:      table.TableName(),
-	})
+	sprops.ChoiceStorageProps.Storage_solution = jsii.String("DYNAMODB")
+	sprops.ChoiceStorageProps.Destination = table.TableName()
+
+	ch := choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &sprops.ChoiceStorageProps)
 
 	table.GrantWriteData(props.RoleWriter)
 	ch.Storage().GrantRead(props.RoleWriter)
 	ch.Destination().GrantRead(props.RoleWriter)
 
 	return dynamoDbStorage{this, table, ch}
+}
+
+// CONFIGURATIONS
+var DynamoDbStorageProps_DEV DynamoDbStorageProps = DynamoDbStorageProps{
+	TableProps: awsdynamodb.TableProps{
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("id"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
+	},
+	ChoiceStorageProps: choice.ChoiceStorageProps_DEV,
+}
+
+var DynamoDbStorageProps_PROD DynamoDbStorageProps = DynamoDbStorageProps{
+	TableProps: awsdynamodb.TableProps{
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("id"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+	},
+	ChoiceStorageProps: choice.ChoiceStorageProps_PROD,
 }

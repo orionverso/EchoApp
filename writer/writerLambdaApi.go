@@ -10,6 +10,9 @@ import (
 )
 
 type WriterApiLambdaProps struct {
+	FunctionProps      awslambda.FunctionProps
+	LogGroupProps      awslogs.LogGroupProps
+	LambdaRestApiProps awsapigateway.LambdaRestApiProps
 }
 
 type writerApiLambda struct {
@@ -39,30 +42,65 @@ type WriterApiLambda interface {
 }
 
 func NewWriterApiLambda(scope constructs.Construct, id *string, props *WriterApiLambdaProps) WriterApiLambda {
+	//Set WriterApiLambdaProps_DEV to Default (nil-case)
+	var sprops WriterApiLambdaProps = WriterApiLambdaProps_DEV
+	if props != nil {
+		sprops = *props
+	}
 	this := constructs.NewConstruct(scope, id)
 
-	handler := awslambda.NewFunction(this, jsii.String("EchoLambda--"), &awslambda.FunctionProps{
+	handler := awslambda.NewFunction(this, jsii.String("EchoLambda--"), &sprops.FunctionProps)
+
+	logGroup := awslogs.NewLogGroup(this, jsii.String("ApiLogGroup"), &sprops.LogGroupProps)
+
+	sprops.LambdaRestApiProps.DeployOptions.AccessLogDestination = awsapigateway.NewLogGroupLogDestination(logGroup)
+	sprops.LambdaRestApiProps.Handler = handler
+
+	apilambdaproxy := awsapigateway.NewLambdaRestApi(this, jsii.String("EndpointWriter"), &sprops.LambdaRestApiProps)
+
+	return writerApiLambda{this, handler, logGroup, apilambdaproxy}
+}
+
+// CONFIGURATIONS
+var WriterApiLambdaProps_DEV WriterApiLambdaProps = WriterApiLambdaProps{
+	FunctionProps: awslambda.FunctionProps{
 		Runtime: awslambda.Runtime_GO_1_X(),
 		Handler: jsii.String("handler"),
 		Code:    awslambda.Code_FromAsset(jsii.String("lambda/handler.zip"), nil),
-	})
-
-	logGroup := awslogs.NewLogGroup(this, jsii.String("ApiLogGroup"), &awslogs.LogGroupProps{
+	},
+	LogGroupProps: awslogs.LogGroupProps{
 		LogGroupName:  jsii.String("/aws/apigateway/MyRestApi"),
 		Retention:     awslogs.RetentionDays_ONE_WEEK,
 		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
-	})
-
-	apilambdaproxy := awsapigateway.NewLambdaRestApi(this, jsii.String("EndpointWriter"), &awsapigateway.LambdaRestApiProps{
+	},
+	LambdaRestApiProps: awsapigateway.LambdaRestApiProps{
 		CloudWatchRole: jsii.Bool(true),
-		Handler:        handler,
 		DeployOptions: &awsapigateway.StageOptions{
-			StageName:            jsii.String("test"),
-			DataTraceEnabled:     jsii.Bool(true),
-			LoggingLevel:         awsapigateway.MethodLoggingLevel_ERROR,
-			AccessLogDestination: awsapigateway.NewLogGroupLogDestination(logGroup),
+			StageName:        jsii.String("test"),
+			DataTraceEnabled: jsii.Bool(true),
+			LoggingLevel:     awsapigateway.MethodLoggingLevel_ERROR,
 		},
-	})
+	},
+}
 
-	return writerApiLambda{this, handler, logGroup, apilambdaproxy}
+// TODO: implement production configurations
+var WriterApiLambdaProps_PROD WriterApiLambdaProps = WriterApiLambdaProps{
+	FunctionProps: awslambda.FunctionProps{
+		Runtime: awslambda.Runtime_GO_1_X(),
+		Handler: jsii.String("handler"),
+		Code:    awslambda.Code_FromAsset(jsii.String("lambda/handler.zip"), nil),
+	},
+	LogGroupProps: awslogs.LogGroupProps{
+		LogGroupName:  jsii.String("/aws/apigateway/MyRestApi"),
+		Retention:     awslogs.RetentionDays_ONE_WEEK,
+		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
+	},
+	LambdaRestApiProps: awsapigateway.LambdaRestApiProps{
+		CloudWatchRole: jsii.Bool(true),
+		DeployOptions: &awsapigateway.StageOptions{
+			StageName:        jsii.String("test"),
+			DataTraceEnabled: jsii.Bool(true),
+			LoggingLevel:     awsapigateway.MethodLoggingLevel_ERROR,
+		},
+	},
 }

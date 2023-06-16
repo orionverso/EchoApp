@@ -10,6 +10,8 @@ import (
 )
 
 type WriterFargateProps struct {
+	RepositoryProps                            awsecr.RepositoryProps
+	ApplicationLoadBalancedFargateServiceProps awsecspatterns.ApplicationLoadBalancedFargateServiceProps
 }
 
 type writerFargate struct {
@@ -38,29 +40,49 @@ type WriterFargate interface {
 }
 
 func NewWriterFargate(scope constructs.Construct, id *string, props *WriterFargateProps) WriterFargate {
+	//Set WriterFargateProps_DEV to Default (nil-case)
+	var sprops WriterFargateProps = WriterFargateProps_DEV
+	if props != nil {
+		sprops = *props
+	}
 
 	this := constructs.NewConstruct(scope, id)
 
-	repo := awsecr.NewRepository(this, jsii.String("DockerEcrRepository"), &awsecr.RepositoryProps{
-		RepositoryName: jsii.String("writer-app-repo"),
-		RemovalPolicy:  awscdk.RemovalPolicy_DESTROY,
-	})
+	repo := awsecr.NewRepository(this, jsii.String("DockerEcrRepository"), &sprops.RepositoryProps)
 
 	image := awsecs.AssetImage_FromEcrRepository(repo, jsii.String("latest"))
-	//YOU NEED TO PUSH THE FIRST IMAGE ASAP WHEN THE REPO IS CREATED
+	//In any setting adjust this image
+	sprops.ApplicationLoadBalancedFargateServiceProps.TaskImageOptions.Image = image
 
-	var cluster awsecs.Cluster
-
-	fargateservice := awsecspatterns.NewApplicationLoadBalancedFargateService(this, jsii.String("GoWebService"), &awsecspatterns.ApplicationLoadBalancedFargateServiceProps{
-		Cluster:        cluster,
-		MemoryLimitMiB: jsii.Number(1024),
-		DesiredCount:   jsii.Number(1),
-		Cpu:            jsii.Number(512),
-		TaskImageOptions: &awsecspatterns.ApplicationLoadBalancedTaskImageOptions{
-			Image: image,
-		},
-		LoadBalancerName: jsii.String("application-lb-name"),
-	})
+	fargateservice := awsecspatterns.NewApplicationLoadBalancedFargateService(this, jsii.String("GoWebService"), &sprops.ApplicationLoadBalancedFargateServiceProps)
 
 	return writerFargate{this, repo, fargateservice}
+}
+
+var WriterFargateProps_DEV WriterFargateProps = WriterFargateProps{
+	RepositoryProps: awsecr.RepositoryProps{
+		RepositoryName:   jsii.String("writer-repo-app-dev"),
+		RemovalPolicy:    awscdk.RemovalPolicy_DESTROY,
+		AutoDeleteImages: jsii.Bool(true),
+	},
+	ApplicationLoadBalancedFargateServiceProps: awsecspatterns.ApplicationLoadBalancedFargateServiceProps{
+		Cluster:          nil,
+		MemoryLimitMiB:   jsii.Number(1024),
+		DesiredCount:     jsii.Number(1),
+		Cpu:              jsii.Number(512),
+		LoadBalancerName: jsii.String("EchoApp-alb-dev-"),
+	},
+}
+
+var WriterFargateProps_PROD WriterFargateProps = WriterFargateProps{
+	RepositoryProps: awsecr.RepositoryProps{
+		RepositoryName: jsii.String("writer-repo-app-prod"),
+	},
+	ApplicationLoadBalancedFargateServiceProps: awsecspatterns.ApplicationLoadBalancedFargateServiceProps{
+		Cluster:          nil,
+		MemoryLimitMiB:   jsii.Number(1024),
+		DesiredCount:     jsii.Number(1),
+		Cpu:              jsii.Number(512),
+		LoadBalancerName: jsii.String("EchoApp-alb-prod-"),
+	},
 }

@@ -11,6 +11,9 @@ import (
 )
 
 type S3StorageProps struct {
+	BucketProps        awss3.BucketProps
+	ChoiceStorageProps choice.ChoiceStorageProps
+	//import from interaction with other constructs
 	RoleWriter awsiam.IRole
 }
 
@@ -35,22 +38,37 @@ type S3Storage interface {
 }
 
 func NewS3Storage(scope constructs.Construct, id *string, props *S3StorageProps) S3Storage {
+	var sprops S3StorageProps = S3StorageProps_DEV
+
+	if props != nil {
+		sprops = *props
+	}
 
 	this := constructs.NewConstruct(scope, id)
 
-	bucket := awss3.NewBucket(this, jsii.String("ReceiveEchoBucket"), &awss3.BucketProps{
-		RemovalPolicy: awscdk.RemovalPolicy_DESTROY,
-	})
+	bucket := awss3.NewBucket(this, jsii.String("ReceiveEchoBucket"), &sprops.BucketProps)
+	sprops.ChoiceStorageProps.Storage_solution = jsii.String("S3")
+	sprops.ChoiceStorageProps.Destination = bucket.BucketName()
 
-	ch := choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &choice.ChoiceStorageProps{
-		Storage_solution: jsii.String("S3"),
-		Destination:      bucket.BucketName(),
-	})
+	ch := choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &sprops.ChoiceStorageProps)
 
 	bucket.GrantWrite(props.RoleWriter, jsii.String("*"), jsii.Strings("*"))
-
 	ch.Storage().GrantRead(props.RoleWriter)
 	ch.Destination().GrantRead(props.RoleWriter)
 
 	return s3Storage{this, bucket, ch}
+}
+
+// CONFIGURATIONS
+var S3StorageProps_DEV S3StorageProps = S3StorageProps{
+	BucketProps: awss3.BucketProps{
+		RemovalPolicy:     awscdk.RemovalPolicy_DESTROY,
+		AutoDeleteObjects: jsii.Bool(true),
+	},
+	ChoiceStorageProps: choice.ChoiceStorageProps_DEV,
+}
+
+var S3StorageProps_PROD S3StorageProps = S3StorageProps{
+	BucketProps:        awss3.BucketProps{},
+	ChoiceStorageProps: choice.ChoiceStorageProps_PROD,
 }

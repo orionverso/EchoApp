@@ -1,6 +1,7 @@
 package component
 
 import (
+	"writer_storage_app/environment"
 	"writer_storage_app/storage"
 	"writer_storage_app/writer"
 
@@ -10,7 +11,9 @@ import (
 )
 
 type ApiLambdaS3Props struct {
-	awscdk.StackProps
+	StackProps           awscdk.StackProps
+	WriterApiLambdaProps writer.WriterApiLambdaProps
+	S3StorageProps       storage.S3StorageProps
 }
 
 type apiLambdaS3 struct {
@@ -34,17 +37,31 @@ type ApiLambdaS3 interface {
 }
 
 func NewApiLambdaS3(scope constructs.Construct, id *string, props *ApiLambdaS3Props) ApiLambdaS3 {
-	var sprops awscdk.StackProps
+	var sprops ApiLambdaS3Props = ApiLambdaS3Props_DEV
+
 	if props != nil {
-		sprops = props.StackProps
+		sprops = *props
 	}
-	stack := awscdk.NewStack(scope, id, &sprops)
 
-	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &writer.WriterApiLambdaProps{})
+	stack := awscdk.NewStack(scope, id, &sprops.StackProps)
 
-	s3 := storage.NewS3Storage(stack, jsii.String("S3Storage"), &storage.S3StorageProps{
-		RoleWriter: wr.Function().Role(),
-	})
+	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &sprops.WriterApiLambdaProps)
 
+	sprops.S3StorageProps.RoleWriter = wr.Function().Role()
+
+	s3 := storage.NewS3Storage(stack, jsii.String("S3Storage"), &sprops.S3StorageProps)
 	return apiLambdaS3{stack, wr, s3}
+}
+
+// CONFIGURATIONS
+var ApiLambdaS3Props_DEV ApiLambdaS3Props = ApiLambdaS3Props{
+	StackProps:           environment.StackProps_DEV,
+	WriterApiLambdaProps: writer.WriterApiLambdaProps_DEV,
+	S3StorageProps:       storage.S3StorageProps_DEV,
+}
+
+var ApiLambdaS3Props_PROD ApiLambdaS3Props = ApiLambdaS3Props{
+	StackProps:           environment.StackProps_PROD,
+	WriterApiLambdaProps: writer.WriterApiLambdaProps_PROD,
+	S3StorageProps:       storage.S3StorageProps_PROD,
 }
