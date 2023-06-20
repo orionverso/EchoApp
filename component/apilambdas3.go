@@ -10,10 +10,18 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
+type ApiLambdaS3Ids struct {
+	ApiLambdaS3_Id     string
+	WriterApiLambda_Id string
+	S3Storage_Id       string
+}
+
 type ApiLambdaS3Props struct {
 	StackProps           awscdk.StackProps
 	WriterApiLambdaProps writer.WriterApiLambdaProps
 	S3StorageProps       storage.S3StorageProps
+	//Identifiers
+	ApiLambdaS3Ids
 }
 
 type apiLambdaS3 struct {
@@ -37,31 +45,59 @@ type ApiLambdaS3 interface {
 }
 
 func NewApiLambdaS3(scope constructs.Construct, id *string, props *ApiLambdaS3Props) ApiLambdaS3 {
-	var sprops ApiLambdaS3Props = ApiLambdaS3Props_DEV
+
+	var sprops ApiLambdaS3Props = ApiLambdaS3Props_DEFAULT
+	var sid ApiLambdaS3Ids = sprops.ApiLambdaS3Ids
 
 	if props != nil {
 		sprops = *props
+		sid = sprops.ApiLambdaS3Ids
 	}
 
-	stack := awscdk.NewStack(scope, id, &sprops.StackProps)
+	if id != nil {
+		sid.ApiLambdaS3_Id = *id
+	}
 
-	wr := writer.NewWriterApiLambda(stack, jsii.String("LambdaApiWriter"), &sprops.WriterApiLambdaProps)
+	stack := awscdk.NewStack(scope, jsii.String(sid.ApiLambdaS3_Id), &sprops.StackProps)
+
+	wr := writer.NewWriterApiLambda(stack, jsii.String(sid.WriterApiLambda_Id), &sprops.WriterApiLambdaProps)
 
 	sprops.S3StorageProps.RoleWriter = wr.Function().Role()
 
-	s3 := storage.NewS3Storage(stack, jsii.String("S3Storage"), &sprops.S3StorageProps)
+	s3 := storage.NewS3Storage(stack, jsii.String(sid.S3Storage_Id), &sprops.S3StorageProps)
 	return apiLambdaS3{stack, wr, s3}
 }
 
 // CONFIGURATIONS
+var ApiLambdaS3Props_DEFAULT ApiLambdaS3Props = ApiLambdaS3Props{
+	StackProps:           environment.StackProps_DEFAULT,
+	WriterApiLambdaProps: writer.WriterApiLambdaProps_DEFAULT,
+	S3StorageProps:       storage.S3StorageProps_DEFAULT,
+	ApiLambdaS3Ids: ApiLambdaS3Ids{
+		ApiLambdaS3_Id:     "EchoApp-Implementation-Two-default",
+		WriterApiLambda_Id: "WriterApiLambda-Component-default",
+		S3Storage_Id:       "RecieveIn-S3Storage-Component-default",
+	},
+}
+
 var ApiLambdaS3Props_DEV ApiLambdaS3Props = ApiLambdaS3Props{
 	StackProps:           environment.StackProps_DEV,
 	WriterApiLambdaProps: writer.WriterApiLambdaProps_DEV,
 	S3StorageProps:       storage.S3StorageProps_DEV,
+	ApiLambdaS3Ids: ApiLambdaS3Ids{
+		ApiLambdaS3_Id:     "EchoApp-Implementation-Two-dev",
+		WriterApiLambda_Id: "WriterApiLambda-Component-dev",
+		S3Storage_Id:       "RecieveIn-S3Storage-Component-dev",
+	},
 }
 
 var ApiLambdaS3Props_PROD ApiLambdaS3Props = ApiLambdaS3Props{
 	StackProps:           environment.StackProps_PROD,
 	WriterApiLambdaProps: writer.WriterApiLambdaProps_PROD,
 	S3StorageProps:       storage.S3StorageProps_PROD,
+	ApiLambdaS3Ids: ApiLambdaS3Ids{
+		ApiLambdaS3_Id:     "EchoApp-Implementation-Two-prod",
+		WriterApiLambda_Id: "WriterApiLambda-Component-prod",
+		S3Storage_Id:       "RecieveIn-S3Storage-Component-prod",
+	},
 }

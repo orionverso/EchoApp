@@ -10,11 +10,19 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
+type S3StorageIds struct {
+	S3Storage_Id string
+	Bucket_Id    string
+	Choice_Id    string
+}
+
 type S3StorageProps struct {
 	BucketProps        awss3.BucketProps
 	ChoiceStorageProps choice.ChoiceStorageProps
 	//import from interaction with other constructs
 	RoleWriter awsiam.IRole
+	//Identifiers
+	S3StorageIds
 }
 
 type s3Storage struct {
@@ -38,19 +46,26 @@ type S3Storage interface {
 }
 
 func NewS3Storage(scope constructs.Construct, id *string, props *S3StorageProps) S3Storage {
-	var sprops S3StorageProps = S3StorageProps_DEV
+
+	var sprops S3StorageProps = S3StorageProps_DEFAULT
+	var sid S3StorageIds = sprops.S3StorageIds
 
 	if props != nil {
 		sprops = *props
+		sid = sprops.S3StorageIds
 	}
 
-	this := constructs.NewConstruct(scope, id)
+	if id != nil {
+		sid.S3Storage_Id = *id
+	}
 
-	bucket := awss3.NewBucket(this, jsii.String("ReceiveEchoBucket"), &sprops.BucketProps)
+	this := constructs.NewConstruct(scope, jsii.String(sid.S3Storage_Id))
+
+	bucket := awss3.NewBucket(this, jsii.String(sid.Bucket_Id), &sprops.BucketProps)
 	sprops.ChoiceStorageProps.Storage_solution = jsii.String("S3")
 	sprops.ChoiceStorageProps.Destination = bucket.BucketName()
 
-	ch := choice.NewChoiceStorage(this, jsii.String("StorageChoice"), &sprops.ChoiceStorageProps)
+	ch := choice.NewChoiceStorage(this, jsii.String(sid.Choice_Id), &sprops.ChoiceStorageProps)
 
 	bucket.GrantWrite(props.RoleWriter, jsii.String("*"), jsii.Strings("*"))
 	ch.Storage().GrantRead(props.RoleWriter)
@@ -60,15 +75,38 @@ func NewS3Storage(scope constructs.Construct, id *string, props *S3StorageProps)
 }
 
 // CONFIGURATIONS
+var S3StorageProps_DEFAULT S3StorageProps = S3StorageProps{
+	BucketProps: awss3.BucketProps{
+		RemovalPolicy:     awscdk.RemovalPolicy_DESTROY,
+		AutoDeleteObjects: jsii.Bool(true),
+	},
+	ChoiceStorageProps: choice.ChoiceStorageProps_DEV,
+	S3StorageIds: S3StorageIds{
+		S3Storage_Id: "RecieveIn-S3Storage-default",
+		Bucket_Id:    "ReceiveEchoBucket-default",
+		Choice_Id:    "StorageChoice-FromBucket-default",
+	},
+}
+
 var S3StorageProps_DEV S3StorageProps = S3StorageProps{
 	BucketProps: awss3.BucketProps{
 		RemovalPolicy:     awscdk.RemovalPolicy_DESTROY,
 		AutoDeleteObjects: jsii.Bool(true),
 	},
 	ChoiceStorageProps: choice.ChoiceStorageProps_DEV,
+	S3StorageIds: S3StorageIds{
+		S3Storage_Id: "RecieveIn-S3Storage-dev",
+		Bucket_Id:    "ReceiveEchoBucket-dev",
+		Choice_Id:    "StorageChoice-FromBucket-dev",
+	},
 }
 
 var S3StorageProps_PROD S3StorageProps = S3StorageProps{
 	BucketProps:        awss3.BucketProps{},
 	ChoiceStorageProps: choice.ChoiceStorageProps_PROD,
+	S3StorageIds: S3StorageIds{
+		S3Storage_Id: "RecieveIn-S3Storage-prod",
+		Bucket_Id:    "ReceiveEchoBucket-prod",
+		Choice_Id:    "StorageChoice-FromBucket-prod",
+	},
 }

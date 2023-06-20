@@ -11,11 +11,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 )
 
-var clientReceiver receiver.Receiver
+var rec receiver.Receiver
 var ctx context.Context
 
 func handler(ctx context.Context, ev events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	err := clientReceiver.Write(ctx, ev.Body)
+	err := rec.Write(ctx, ev.Body)
 	if err != nil {
 		log.Println(err)
 		return events.APIGatewayProxyResponse{}, err
@@ -39,5 +39,6 @@ func init() {
 	if err != nil {
 		// Handle error
 	}
-	clientReceiver, err = receiver.GetReceiver(ctx, cfg)
+	rec, err = receiver.GetReceiver(ctx, cfg)
+
 }
