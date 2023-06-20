@@ -30,12 +30,17 @@ func (ec echoAppGamma) EchoAppGammaComponent() component.FargateS3 {
 	return ec.cpt
 }
 
+func (ec echoAppGamma) EchoAppGammaStage() awscdk.Stage {
+	return ec.Stage
+}
+
 type EchoAppGamma interface {
 	awscdk.Stage
 	EchoAppGammaComponent() component.FargateS3
+	EchoAppGammaStage() awscdk.Stage
 }
 
-func NewEchoAppGammaStage(scope constructs.Construct, id *string, props *EchoAppGammaProps) EchoAppGamma {
+func NewEchoAppGamma(scope constructs.Construct, id *string, props *EchoAppGammaProps) EchoAppGamma {
 
 	var sprops EchoAppGammaProps = EchoAppProps_DEFAULT
 	var sid EchoAppGammaIds = sprops.EchoAppGammaIds

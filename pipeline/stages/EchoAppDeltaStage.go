@@ -30,12 +30,17 @@ func (ec echoAppDelta) EchoAppDeltaComponent() component.FargateDynamoDb {
 	return ec.cpt
 }
 
+func (ec echoAppDelta) EchoAppDeltaStage() awscdk.Stage {
+	return ec.Stage
+}
+
 type EchoAppDelta interface {
 	awscdk.Stage
 	EchoAppDeltaComponent() component.FargateDynamoDb
+	EchoAppDeltaStage() awscdk.Stage
 }
 
-func NewEchoAppDeltaStage(scope constructs.Construct, id *string, props *EchoAppDeltaProps) EchoAppDelta {
+func NewEchoAppDelta(scope constructs.Construct, id *string, props *EchoAppDeltaProps) EchoAppDelta {
 
 	var sprops EchoAppDeltaProps = EchoAppDeltaProps_DEFAULT
 	var sid EchoAppDeltaIds = sprops.EchoAppDeltaIds

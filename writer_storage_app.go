@@ -1,7 +1,7 @@
 package main
 
 import (
-	"writer_storage_app/component"
+	pipe "writer_storage_app/pipeline"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/jsii-runtime-go"
@@ -13,10 +13,8 @@ func main() {
 	app := awscdk.NewApp(nil)
 
 	//component.NewApiLambdaDynamoDb(app, nil, nil)
-	sprops := component.FargateS3Props_DEV
-	component.NewFargateS3(app, nil, &sprops)
 
-	//pipeline.NewAlfaPipeline(app, nil, nil)
+	pipe.NewAlfaPipeline(app, nil, &pipe.AlfaPipeline_DEV)
 
 	app.Synth(nil)
 }

@@ -43,7 +43,6 @@ type alfaPipeline struct {
 	codePipeline       pipelines.CodePipeline
 	echoAppAlfa_1ENV   stages.EchoAppAlfa
 	echoAppAlfa_2ENV   stages.EchoAppAlfa
-	echoAppAlfa_3ENV   stages.EchoAppAlfa
 }
 
 func (af alfaPipeline) AlfaCfnConnection() awscodestarconnections.CfnConnection {
@@ -70,10 +69,6 @@ func (af alfaPipeline) AlfaEchoAppAlfa_2ENV() stages.EchoAppAlfa {
 	return af.echoAppAlfa_2ENV
 }
 
-func (af alfaPipeline) AlfaEchoAppAlfa_3ENV() stages.EchoAppAlfa {
-	return af.echoAppAlfa_3ENV
-}
-
 type AlfaPipeline interface {
 	awscdk.Stack
 	AlfaCfnConnection() awscodestarconnections.CfnConnection
@@ -82,7 +77,6 @@ type AlfaPipeline interface {
 	AlfaCodePipeline() pipelines.CodePipeline
 	AlfaEchoAppAlfa_1ENV() stages.EchoAppAlfa
 	AlfaEchoAppAlfa_2ENV() stages.EchoAppAlfa
-	AlfaEchoAppAlfa_3ENV() stages.EchoAppAlfa
 }
 
 func NewAlfaPipeline(scope constructs.Construct, id *string, props *AlfaPipelineProps) AlfaPipeline {
@@ -124,16 +118,13 @@ func NewAlfaPipeline(scope constructs.Construct, id *string, props *AlfaPipeline
 
 	pipe := pipelines.NewCodePipeline(stack, jsii.String(sid.CodePipeline_Id), &sprops.CodePipelineProps)
 
-	deploy_First_Env := stages.NewEchoAppAlfaStage(stack, nil, &sprops.EchoAppAlfaProps_1ENV) // Development Environment
-	pipe.AddStage(deploy_First_Env, nil)
+	deploy_First_Env := stages.NewEchoAppAlfa(stack, nil, &sprops.EchoAppAlfaProps_1ENV) // Development Environment
+	pipe.AddStage(deploy_First_Env.EchoAppAlfaStage(), nil)
 
-	deploy_Second_Env := stages.NewEchoAppAlfaStage(stack, nil, &sprops.EchoAppAlfaProps_2ENV) //Staging Environment
-	pipe.AddStage(deploy_Second_Env, &sprops.AddStageOpts)
+	deploy_Second_Env := stages.NewEchoAppAlfa(stack, nil, &sprops.EchoAppAlfaProps_2ENV) //Staging Environment
+	pipe.AddStage(deploy_Second_Env.EchoAppAlfaStage(), &sprops.AddStageOpts)
 
-	deploy_Third_Env := stages.NewEchoAppAlfaStage(stack, nil, &sprops.EchoAppAlfaProps_3ENV) //Production Environment
-	pipe.AddStage(deploy_Third_Env, &sprops.AddStageOpts)
-
-	return alfaPipeline{stack, conn, GithubRepository, Template, pipe, deploy_First_Env, deploy_Second_Env, deploy_Second_Env}
+	return alfaPipeline{stack, conn, GithubRepository, Template, pipe, deploy_First_Env, deploy_Second_Env}
 }
 
 // CONFIGURATIONS
@@ -174,18 +165,20 @@ var AlfaPipeline_DEFAULT AlfaPipelineProps = AlfaPipelineProps{
 	},
 
 	AlfaPipelineIds: AlfaPipelineIds{
-		AlfaPipeline_Id:                  "AlfaPipeline",
-		CfnConnection_Id:                 "CodestarConnectionToGithub",
-		CodePipelineSource_Connection_Id: "orionverso/EchoApp_mock",
-		CodeBuildStep_Id:                 "SynthStep",
-		CodePipeline_Id:                  "EchoAppAlfa-Pipeline",
-		EchoAppAlfa_Id:                   "DeployStageOf-EchoAppAlfa",
+		AlfaPipeline_Id:  "AlfaPipeline-default",
+		CfnConnection_Id: "CodestarConnectionToGithub",
+
+		CodePipelineSource_Connection_Id:        "orionverso/EchoApp_mock",
+		CodePipelineSource_Connection_branch_Id: "dev",
+		CodeBuildStep_Id:                        "SynthStep",
+		CodePipeline_Id:                         "EchoAppAlfa-Pipeline",
+		EchoAppAlfa_Id:                          "DeployStageOf-EchoAppAlfa",
 	},
 }
 
 var AlfaPipeline_DEV AlfaPipelineProps = AlfaPipelineProps{
 
-	StackProps: environment.StackProps_DEFAULT,
+	StackProps: environment.StackProps_DEV,
 
 	CfnConnectionProps: awscodestarconnections.CfnConnectionProps{
 		ConnectionName: jsii.String("GithubConnection"),
@@ -204,13 +197,12 @@ var AlfaPipeline_DEV AlfaPipelineProps = AlfaPipelineProps{
 	},
 
 	CodePipelineProps: pipelines.CodePipelineProps{
-		PipelineName:     jsii.String("EchoAppAlfa-Pipeline-default"),
+		PipelineName:     jsii.String("EchoAppAlfa-Pipeline-dev"),
 		CrossAccountKeys: jsii.Bool(true),
 	},
 
-	EchoAppAlfaProps_1ENV: stages.EchoAppAlfaProps_DEFAULT,
-	EchoAppAlfaProps_2ENV: stages.EchoAppAlfaProps_DEV,
-	EchoAppAlfaProps_3ENV: stages.EchoAppAlfaProps_PROD,
+	EchoAppAlfaProps_1ENV: stages.EchoAppAlfaProps_DEV,
+	EchoAppAlfaProps_2ENV: stages.EchoAppAlfaProps_PROD,
 
 	AddStageOpts: pipelines.AddStageOpts{
 		Pre: &[]pipelines.Step{
@@ -221,11 +213,12 @@ var AlfaPipeline_DEV AlfaPipelineProps = AlfaPipelineProps{
 	},
 
 	AlfaPipelineIds: AlfaPipelineIds{
-		AlfaPipeline_Id:                  "AlfaPipeline",
-		CfnConnection_Id:                 "CodestarConnectionToGithub",
-		CodePipelineSource_Connection_Id: "orionverso/EchoApp_mock",
-		CodeBuildStep_Id:                 "SynthStep",
-		CodePipeline_Id:                  "EchoAppAlfa-Pipeline",
-		EchoAppAlfa_Id:                   "DeployStageOf-EchoAppAlfa",
+		AlfaPipeline_Id:                         "AlfaPipeline-dev",
+		CfnConnection_Id:                        "CodestarConnectionToGithub",
+		CodePipelineSource_Connection_Id:        "orionverso/EchoApp_mock",
+		CodePipelineSource_Connection_branch_Id: "dev",
+		CodeBuildStep_Id:                        "SynthStep",
+		CodePipeline_Id:                         "EchoAppAlfa-Pipeline",
+		EchoAppAlfa_Id:                          "DeployStageOf-EchoAppAlfa",
 	},
 }

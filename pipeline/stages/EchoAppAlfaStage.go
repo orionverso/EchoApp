@@ -30,12 +30,17 @@ func (ec echoAppAlfa) EchoAppAlfaComponent() component.ApiLambdaDynamoDb {
 	return ec.cpt
 }
 
+func (ec echoAppAlfa) EchoAppAlfaStage() awscdk.Stage {
+	return ec.Stage
+}
+
 type EchoAppAlfa interface {
 	awscdk.Stage
 	EchoAppAlfaComponent() component.ApiLambdaDynamoDb
+	EchoAppAlfaStage() awscdk.Stage
 }
 
-func NewEchoAppAlfaStage(scope constructs.Construct, id *string, props *EchoAppAlfaProps) EchoAppAlfa {
+func NewEchoAppAlfa(scope constructs.Construct, id *string, props *EchoAppAlfaProps) EchoAppAlfa {
 
 	var sprops EchoAppAlfaProps = EchoAppAlfaProps_DEFAULT
 	var sid EchoAppAlfaIds = sprops.EchoAppAlfaIds
