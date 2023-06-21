@@ -42,7 +42,7 @@ type EchoAppGamma interface {
 
 func NewEchoAppGamma(scope constructs.Construct, id *string, props *EchoAppGammaProps) EchoAppGamma {
 
-	var sprops EchoAppGammaProps = EchoAppProps_DEFAULT
+	var sprops EchoAppGammaProps = EchoAppGammaProps_DEFAULT
 	var sid EchoAppGammaIds = sprops.EchoAppGammaIds
 
 	if props != nil {
@@ -63,7 +63,7 @@ func NewEchoAppGamma(scope constructs.Construct, id *string, props *EchoAppGamma
 }
 
 // CONFIGURATIONS
-var EchoAppProps_DEFAULT EchoAppGammaProps = EchoAppGammaProps{
+var EchoAppGammaProps_DEFAULT EchoAppGammaProps = EchoAppGammaProps{
 	StageProps:     environment.Stage_DEFAULT,
 	FargateS3Props: component.FargateS3Props_DEFAULT,
 	EchoAppGammaIds: EchoAppGammaIds{
@@ -72,7 +72,7 @@ var EchoAppProps_DEFAULT EchoAppGammaProps = EchoAppGammaProps{
 	},
 }
 
-var EchoAppProps_DEV EchoAppGammaProps = EchoAppGammaProps{
+var EchoAppGammaProps_DEV EchoAppGammaProps = EchoAppGammaProps{
 	StageProps:     environment.Stage_DEV,
 	FargateS3Props: component.FargateS3Props_DEV,
 	EchoAppGammaIds: EchoAppGammaIds{
@@ -81,7 +81,7 @@ var EchoAppProps_DEV EchoAppGammaProps = EchoAppGammaProps{
 	},
 }
 
-var EchoAppProps_PROD EchoAppGammaProps = EchoAppGammaProps{
+var EchoAppGammaProps_PROD EchoAppGammaProps = EchoAppGammaProps{
 	StageProps:     environment.Stage_PROD,
 	FargateS3Props: component.FargateS3Props_PROD,
 	EchoAppGammaIds: EchoAppGammaIds{

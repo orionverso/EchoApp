@@ -2,6 +2,7 @@ package main
 
 import (
 	pipe "writer_storage_app/pipeline"
+	"writer_storage_app/writer/asset"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/jsii-runtime-go"
@@ -13,8 +14,14 @@ func main() {
 	app := awscdk.NewApp(nil)
 
 	//component.NewApiLambdaDynamoDb(app, nil, nil)
+	assetRepo := asset.NewRepo(app, nil, &asset.RepoProps_DEV)
 
-	pipe.NewAlfaPipeline(app, nil, &pipe.AlfaPipeline_DEV)
+	sprops := pipe.GammaPipeline_DEV
+
+	sprops.EchoAppGammaProps_1ENV.FargateS3Props.WriterFargateProps.Repo = assetRepo.Repository()
+	sprops.EchoAppGammaProps_2ENV.FargateS3Props.WriterFargateProps.Repo = assetRepo.Repository()
+
+	pipe.NewGammaPipeline(app, nil, &sprops)
 
 	app.Synth(nil)
 }

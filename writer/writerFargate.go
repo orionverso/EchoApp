@@ -1,7 +1,6 @@
 package writer
 
 import (
-	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecr"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecs"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsecspatterns"
@@ -11,15 +10,15 @@ import (
 
 type WriterFargateIds struct {
 	WriterFargate_Id                         string
-	Repository_Id                            string
 	ApplicationLoadBalancedFargateService_Id string
 	Tag_Id                                   string
 }
 
 type WriterFargateProps struct {
 	//InsideProps
-	RepositoryProps                            awsecr.RepositoryProps
 	ApplicationLoadBalancedFargateServiceProps awsecspatterns.ApplicationLoadBalancedFargateServiceProps
+	//Import
+	Repo awsecr.Repository
 	//Identifiers
 	WriterFargateIds
 }
@@ -64,10 +63,7 @@ func NewWriterFargate(scope constructs.Construct, id *string, props *WriterFarga
 	}
 	this := constructs.NewConstruct(scope, jsii.String(sid.WriterFargate_Id))
 
-	repo := awsecr.NewRepository(this, jsii.String(sid.Repository_Id), &sprops.RepositoryProps)
-	//image := awsecs.EcrImage_FromEcrRepository(repo, jsii.String(sid.Tag_Id))
-
-	image := awsecs.AssetImage_FromEcrRepository(repo, jsii.String("latest"))
+	image := awsecs.AssetImage_FromEcrRepository(sprops.Repo, jsii.String("latest"))
 
 	TaskImageOptions := &awsecspatterns.ApplicationLoadBalancedTaskImageOptions{}
 	TaskImageOptions.Image = image
@@ -79,16 +75,12 @@ func NewWriterFargate(scope constructs.Construct, id *string, props *WriterFarga
 	fargateservice := awsecspatterns.NewApplicationLoadBalancedFargateService(this,
 		jsii.String(sid.ApplicationLoadBalancedFargateService_Id), &sprops.ApplicationLoadBalancedFargateServiceProps)
 
-	return writerFargate{this, repo, fargateservice}
+	return writerFargate{this, sprops.Repo, fargateservice}
 }
 
 // CONGIFURATIONS
+
 var WriterFargateProps_DEFAULT WriterFargateProps = WriterFargateProps{
-	RepositoryProps: awsecr.RepositoryProps{
-		RepositoryName:   jsii.String("writer-repo-app-default"),
-		RemovalPolicy:    awscdk.RemovalPolicy_DESTROY,
-		AutoDeleteImages: jsii.Bool(true),
-	},
 	ApplicationLoadBalancedFargateServiceProps: awsecspatterns.ApplicationLoadBalancedFargateServiceProps{
 		MemoryLimitMiB:   jsii.Number(1024),
 		DesiredCount:     jsii.Number(1),
@@ -98,18 +90,12 @@ var WriterFargateProps_DEFAULT WriterFargateProps = WriterFargateProps{
 
 	WriterFargateIds: WriterFargateIds{
 		WriterFargate_Id:                         "WriterFargate-default",
-		Repository_Id:                            "DockerEcrRepository-default",
 		ApplicationLoadBalancedFargateService_Id: "GoWebService-default",
 		Tag_Id:                                   "latest",
 	},
 }
 
 var WriterFargateProps_DEV WriterFargateProps = WriterFargateProps{
-	RepositoryProps: awsecr.RepositoryProps{
-		RepositoryName:   jsii.String("writer-repo-app-dev"),
-		RemovalPolicy:    awscdk.RemovalPolicy_DESTROY,
-		AutoDeleteImages: jsii.Bool(true),
-	},
 	ApplicationLoadBalancedFargateServiceProps: awsecspatterns.ApplicationLoadBalancedFargateServiceProps{
 		MemoryLimitMiB:   jsii.Number(1024),
 		DesiredCount:     jsii.Number(1),
@@ -118,16 +104,12 @@ var WriterFargateProps_DEV WriterFargateProps = WriterFargateProps{
 	},
 	WriterFargateIds: WriterFargateIds{
 		WriterFargate_Id:                         "WriterFargate-dev",
-		Repository_Id:                            "DockerEcrRepository-dev",
 		ApplicationLoadBalancedFargateService_Id: "GoWebService-dev",
 		Tag_Id:                                   "latest",
 	},
 }
 
 var WriterFargateProps_PROD WriterFargateProps = WriterFargateProps{
-	RepositoryProps: awsecr.RepositoryProps{
-		RepositoryName: jsii.String("writer-repo-app-prod"),
-	},
 	ApplicationLoadBalancedFargateServiceProps: awsecspatterns.ApplicationLoadBalancedFargateServiceProps{
 		MemoryLimitMiB:   jsii.Number(1024),
 		DesiredCount:     jsii.Number(1),
@@ -136,7 +118,6 @@ var WriterFargateProps_PROD WriterFargateProps = WriterFargateProps{
 	},
 	WriterFargateIds: WriterFargateIds{
 		WriterFargate_Id:                         "WriterFargate-prod",
-		Repository_Id:                            "DockerEcrRepository-prod",
 		ApplicationLoadBalancedFargateService_Id: "GoWebService-prod",
 		Tag_Id:                                   "latest",
 	},
