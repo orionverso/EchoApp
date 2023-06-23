@@ -1,4 +1,4 @@
-package asset
+package component
 
 import (
 	"writer_storage_app/environment"
@@ -30,8 +30,13 @@ func (rp repo) Repository() awsecr.Repository {
 	return rp.repository
 }
 
+func (rp repo) RepoStack() awscdk.Stack {
+	return rp.Stack
+}
+
 type Repo interface {
 	Repository() awsecr.Repository
+	RepoStack() awscdk.Stack
 }
 
 func NewRepo(scope constructs.Construct, id *string, props *RepoProps) Repo {

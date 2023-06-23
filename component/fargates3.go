@@ -38,10 +38,15 @@ func (fg fargateS3) S3Storage() storage.S3Storage {
 	return fg.s3Storage
 }
 
+func (fg fargateS3) FargateS3Stack() awscdk.Stack {
+	return fg.Stack
+}
+
 type FargateS3 interface {
 	awscdk.Stack
 	Fargate() writer.WriterFargate
 	S3Storage() storage.S3Storage
+	FargateS3Stack() awscdk.Stack
 }
 
 func NewFargateS3(scope constructs.Construct, id *string, props *FargateS3Props) FargateS3 {

@@ -1,12 +1,7 @@
 package pipeline
 
 import (
-	"writer_storage_app/environment"
 	"writer_storage_app/pipeline/stages"
-<<<<<<< Updated upstream
-=======
-	"writer_storage_app/pipeline/stages/auxiliar"
->>>>>>> Stashed changes
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awscodestarconnections"
@@ -15,41 +10,24 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
-type GammaPipelineIds struct {
-	GammaPipeline_Id                        string
-	CfnConnection_Id                        string
-	CodePipelineSource_Connection_Id        string
-	CodePipelineSource_Connection_branch_Id string
-	CodeBuildStep_Id                        string
-	CodePipeline_Id                         string
-	EchoAppGamma_Id                         string
-}
-
-type GammaPipelineProps struct {
-	StackProps              awscdk.StackProps
-	CfnConnectionProps      awscodestarconnections.CfnConnectionProps
-	ConnectionSourceOptions pipelines.ConnectionSourceOptions
-	CodeBuildStepProps      pipelines.CodeBuildStepProps
-	CodePipelineProps       pipelines.CodePipelineProps
-<<<<<<< Updated upstream
-=======
-	EcrRepositoryProps      auxiliar.EcrRepositoryProps
->>>>>>> Stashed changes
-	EchoAppGammaProps_1ENV  stages.EchoAppGammaProps
-	EchoAppGammaProps_2ENV  stages.EchoAppGammaProps
-	AddStageOpts            pipelines.AddStageOpts
-	//Identifiers
-	GammaPipelineIds
+type GammaPipeline interface {
+	awscdk.Stack
+	GammaCfnConnection() awscodestarconnections.CfnConnection
+	GammaCodePipelineSource() pipelines.CodePipelineSource
+	GammaCodeBuildStep() pipelines.CodeBuildStep
+	GammaCodePipeline() pipelines.CodePipeline
+	GammaEchoAppGamma_First_Env() stages.EchoAppGamma
+	GammaEchoAppGamma_Second_Env() stages.EchoAppGamma
 }
 
 type gammaPipeline struct {
 	awscdk.Stack
-	cfnConnection      awscodestarconnections.CfnConnection
-	codePipelineSource pipelines.CodePipelineSource
-	codeBuildStep      pipelines.CodeBuildStep
-	codePipeline       pipelines.CodePipeline
-	echoAppGamma_1ENV  stages.EchoAppGamma
-	echoAppGamma_2ENV  stages.EchoAppGamma
+	cfnConnection           awscodestarconnections.CfnConnection
+	codePipelineSource      pipelines.CodePipelineSource
+	codeBuildStep           pipelines.CodeBuildStep
+	codePipeline            pipelines.CodePipeline
+	echoAppGamma_First_Env  stages.EchoAppGamma
+	echoAppGamma_Second_Env stages.EchoAppGamma
 }
 
 func (af gammaPipeline) GammaCfnConnection() awscodestarconnections.CfnConnection {
@@ -68,27 +46,17 @@ func (af gammaPipeline) GammaCodePipeline() pipelines.CodePipeline {
 	return af.codePipeline
 }
 
-func (af gammaPipeline) GammaEchoAppGamma_1ENV() stages.EchoAppGamma {
-	return af.echoAppGamma_1ENV
+func (af gammaPipeline) GammaEchoAppGamma_First_Env() stages.EchoAppGamma {
+	return af.echoAppGamma_First_Env
 }
 
-func (af gammaPipeline) GammaEchoAppGamma_2ENV() stages.EchoAppGamma {
-	return af.echoAppGamma_2ENV
-}
-
-type GammaPipeline interface {
-	awscdk.Stack
-	GammaCfnConnection() awscodestarconnections.CfnConnection
-	GammaCodePipelineSource() pipelines.CodePipelineSource
-	GammaCodeBuildStep() pipelines.CodeBuildStep
-	GammaCodePipeline() pipelines.CodePipeline
-	GammaEchoAppGamma_1ENV() stages.EchoAppGamma
-	GammaEchoAppGamma_2ENV() stages.EchoAppGamma
+func (af gammaPipeline) GammaEchoAppGamma_Second_Env() stages.EchoAppGamma {
+	return af.echoAppGamma_Second_Env
 }
 
 func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipelineProps) GammaPipeline {
 
-	var sprops GammaPipelineProps = GammaPipeline_DEFAULT
+	var sprops GammaPipelineProps = GammaPipelineProps_DEV
 	var sid GammaPipelineIds = sprops.GammaPipelineIds
 
 	if props != nil {
@@ -124,116 +92,26 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 	sprops.CodePipelineProps.Synth = Template
 
 	pipe := pipelines.NewCodePipeline(stack, jsii.String(sid.CodePipeline_Id), &sprops.CodePipelineProps)
+	//First Environment: Dev
+	deploy_First_Env := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_First_Env) // Development Environment
 
-	deploy_First_Env := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_1ENV) // Development Environment
-	pipe.AddStage(deploy_First_Env.EchoAppGammaStage(), nil)
+	sprops.AddedStep.CheckPushImageStep.AddStepDependency(sprops.AddedStep.PushImageStep)
 
-	deploy_Second_Env := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_2ENV) //Staging Environment
-	pipe.AddStage(deploy_Second_Env.EchoAppGammaStage(), &sprops.AddStageOpts)
+	RepoStackPosition, FargateStackPosition := 0, 1
+	addStackToStackSteps(deploy_First_Env.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_First_Env)
+	addStackToStackSteps(deploy_First_Env.EchoAppGammaFargateS3ComponentStack(), FargateStackPosition, &sprops.AddStageOpts_First_Env)
+
+	pipe.AddStage(deploy_First_Env.EchoAppGammaStage(), &sprops.AddStageOpts_First_Env)
+	//Second Enviroment: Prod
+	deploy_Second_Env := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_Second_Env) //PROD Environment
+
+	sprops.AddedStep = AddedStep_PROD //Change to Prods steps
+
+	sprops.AddedStep.CheckPushImageStep.AddStepDependency(sprops.AddedStep.PushImageStep)
+
+	addStackToStackSteps(deploy_Second_Env.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_Second_Env) // 0
+
+	pipe.AddStage(deploy_Second_Env.EchoAppGammaStage(), &sprops.AddStageOpts_Second_Env)
 
 	return gammaPipeline{stack, conn, GithubRepository, Template, pipe, deploy_First_Env, deploy_Second_Env}
-}
-
-// CONFIGURATIONS
-var GammaPipeline_DEFAULT GammaPipelineProps = GammaPipelineProps{
-
-	StackProps: environment.StackProps_DEFAULT,
-
-	CfnConnectionProps: awscodestarconnections.CfnConnectionProps{
-		ConnectionName: jsii.String("GithubConnection"),
-		ProviderType:   jsii.String("GitHub"),
-	},
-
-	CodeBuildStepProps: pipelines.CodeBuildStepProps{
-		Commands: jsii.Strings("npm install -g aws-cdk", "cd webserver", "docker build -t writer-server .", "cd ..", "cdk synth"),
-		Env: &map[string]*string{
-			"CDK_DEFAULT_REGION":  environment.StackProps_DEFAULT.Env.Region,
-			"CDK_DEFAULT_ACCOUNT": environment.StackProps_DEFAULT.Env.Account,
-			"CDK_DEV_REGION":      environment.StackProps_DEV.Env.Region,
-			"CDK_DEV_ACCOUNT":     environment.StackProps_DEV.Env.Account,
-		},
-	},
-
-	CodePipelineProps: pipelines.CodePipelineProps{
-		PipelineName:     jsii.String("EchoAppGamma-Pipeline-default"),
-		CrossAccountKeys: jsii.Bool(true),
-	},
-
-<<<<<<< Updated upstream
-=======
-	EcrRepositoryProps: auxiliar.EcrRepositoryProps_DEFAULT,
-
->>>>>>> Stashed changes
-	EchoAppGammaProps_1ENV: stages.EchoAppGammaProps_DEFAULT,
-	EchoAppGammaProps_2ENV: stages.EchoAppGammaProps_DEV,
-
-	AddStageOpts: pipelines.AddStageOpts{
-		Pre: &[]pipelines.Step{
-			pipelines.NewManualApprovalStep(jsii.String("PromoteComponentToProduction"), &pipelines.ManualApprovalStepProps{
-				Comment: jsii.String("LAST CHECK BEFORE PRODUCTION"),
-			}),
-		},
-	},
-
-	GammaPipelineIds: GammaPipelineIds{
-		GammaPipeline_Id: "GammaPipeline-default",
-		CfnConnection_Id: "CodestarConnectionToGithub",
-
-		CodePipelineSource_Connection_Id:        "orionverso/EchoApp_mock",
-		CodePipelineSource_Connection_branch_Id: "gamma",
-		CodeBuildStep_Id:                        "SynthStep",
-		CodePipeline_Id:                         "EchoAppGamma-Pipeline",
-		EchoAppGamma_Id:                         "DeployStageOf-EchoAppGamma",
-	},
-}
-
-var GammaPipeline_DEV GammaPipelineProps = GammaPipelineProps{
-
-	StackProps: environment.StackProps_DEV,
-
-	CfnConnectionProps: awscodestarconnections.CfnConnectionProps{
-		ConnectionName: jsii.String("GithubConnection"),
-		ProviderType:   jsii.String("GitHub"),
-	},
-
-	CodeBuildStepProps: pipelines.CodeBuildStepProps{
-		Commands: jsii.Strings("npm install -g aws-cdk", "cd webserver", "docker build -t writer-server .", "cd ..", "cdk synth"),
-		Env: &map[string]*string{
-			"CDK_DEV_REGION":   environment.StackProps_DEV.Env.Region,
-			"CDK_DEV_ACCOUNT":  environment.StackProps_DEV.Env.Account,
-			"CDK_PROD_REGION":  environment.StackProps_PROD.Env.Region,
-			"CDK_PROD_ACCOUNT": environment.StackProps_PROD.Env.Account,
-		},
-	},
-
-	CodePipelineProps: pipelines.CodePipelineProps{
-		PipelineName:     jsii.String("EchoAppGamma-Pipeline-dev"),
-		CrossAccountKeys: jsii.Bool(true),
-	},
-
-<<<<<<< Updated upstream
-=======
-	EcrRepositoryProps: auxiliar.EcrRepositoryProps_DEV,
-
->>>>>>> Stashed changes
-	EchoAppGammaProps_1ENV: stages.EchoAppGammaProps_DEV,
-	EchoAppGammaProps_2ENV: stages.EchoAppGammaProps_PROD,
-
-	AddStageOpts: pipelines.AddStageOpts{
-		Pre: &[]pipelines.Step{
-			pipelines.NewManualApprovalStep(jsii.String("PromoteComponentToProduction"), &pipelines.ManualApprovalStepProps{
-				Comment: jsii.String("LAST CHECK BEFORE PRODUCTION"),
-			}),
-		},
-	},
-
-	GammaPipelineIds: GammaPipelineIds{
-		GammaPipeline_Id:                        "GammaPipeline-dev",
-		CfnConnection_Id:                        "CodestarConnectionToGithub",
-		CodePipelineSource_Connection_Id:        "orionverso/EchoApp_mock",
-		CodePipelineSource_Connection_branch_Id: "gamma",
-		CodeBuildStep_Id:                        "SynthStep",
-		CodePipeline_Id:                         "EchoAppGamma-Pipeline",
-		EchoAppGamma_Id:                         "DeployStageOf-EchoAppGamma",
-	},
 }
