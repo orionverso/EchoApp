@@ -63,6 +63,17 @@ var AddedStep_DEV AddedStep = AddedStep{
 
 		BuildEnvironment: &awscodebuild.BuildEnvironment{
 			Privileged: jsii.Bool(true), //Run Docker inside CodeBuild container
+			EnvironmentVariables: &map[string]*awscodebuild.BuildEnvironmentVariable{
+				"CDK_DEV_REGION": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(environment.StackProps_DEV.Env.Region),
+				},
+				"CDK_DEV_ACCOUNT": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(environment.StackProps_DEV.Env.Account),
+				},
+				"REPOSITORY_NAME_DEV": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(component.RepoProps_DEV.RepositoryProps.RepositoryName),
+				},
+			},
 		},
 	}),
 
@@ -98,31 +109,7 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 			RolePolicy: &[]awsiam.PolicyStatement{
 				PushEcrPolicy(), //docker login sirve para dev account no para prod account
 			},
-			BuildEnvironment: &awscodebuild.BuildEnvironment{
-				Privileged: jsii.Bool(true), //You need for build docker images inside codebuild project
-				EnvironmentVariables: &map[string]*awscodebuild.BuildEnvironmentVariable{
-					"CDK_DEV_REGION": &awscodebuild.BuildEnvironmentVariable{
-						Value: aws.ToString(environment.StackProps_DEV.Env.Region),
-					},
-					"CDK_DEV_ACCOUNT": &awscodebuild.BuildEnvironmentVariable{
-						Value: aws.ToString(environment.StackProps_DEV.Env.Account),
-					},
-					"CDK_PROD_REGION": &awscodebuild.BuildEnvironmentVariable{
-						Value: aws.ToString(environment.StackProps_PROD.Env.Region),
-					},
-
-					"CDK_PROD_ACCOUNT": &awscodebuild.BuildEnvironmentVariable{
-						Value: aws.ToString(environment.StackProps_PROD.Env.Account),
-					},
-
-					"REPOSITORY_NAME_DEV": &awscodebuild.BuildEnvironmentVariable{ //At runtime
-						Value: aws.ToString(component.RepoProps_DEV.RepositoryProps.RepositoryName),
-					},
-					"REPOSITORY_NAME_PROD": &awscodebuild.BuildEnvironmentVariable{ //At runtime
-						Value: aws.ToString(component.RepoProps_PROD.RepositoryProps.RepositoryName),
-					},
-				},
-			},
+			BuildEnvironment: &awscodebuild.BuildEnvironment{},
 		},
 	},
 
@@ -186,6 +173,18 @@ var AddedStep_PROD AddedStep = AddedStep{
 
 		BuildEnvironment: &awscodebuild.BuildEnvironment{
 			Privileged: jsii.Bool(true), //Run Docker inside CodeBuild container
+			EnvironmentVariables: &map[string]*awscodebuild.BuildEnvironmentVariable{
+				"CDK_PROD_REGION": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(environment.StackProps_PROD.Env.Region),
+				},
+
+				"CDK_PROD_ACCOUNT": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(environment.StackProps_PROD.Env.Account),
+				},
+				"REPOSITORY_NAME_PROD": &awscodebuild.BuildEnvironmentVariable{ //At runtime
+					Value: aws.ToString(component.RepoProps_PROD.RepositoryProps.RepositoryName),
+				},
+			},
 		},
 	}),
 
