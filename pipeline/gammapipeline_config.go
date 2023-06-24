@@ -83,6 +83,10 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 		ProviderType:   jsii.String("GitHub"),
 	},
 
+	ConnectionSourceOptions: pipelines.ConnectionSourceOptions{
+		TriggerOnPush: jsii.Bool(false),
+	},
+
 	CodeBuildStepProps: pipelines.CodeBuildStepProps{
 		Commands: jsii.Strings("npm install -g aws-cdk", "cdk synth"),
 	},
