@@ -38,8 +38,10 @@ type GammaPipelineProps struct {
 	CodePipelineProps            pipelines.CodePipelineProps
 	EchoAppGammaProps_FIRST_ENV  stages.EchoAppGammaProps
 	EchoAppGammaProps_SECOND_ENV stages.EchoAppGammaProps
+	NextDeployPreparationProps   stages.NextDeployPreparationProps
 	AddStageOpts_FIRST_ENV       pipelines.AddStageOpts
 	AddStageOpts_SECOND_ENV      pipelines.AddStageOpts
+	AddStageOpts_NEXT_ENV_PREP   pipelines.AddStageOpts
 	AddedStep                    AddedStep
 	//Identifiers
 	GammaPipelineIds
@@ -75,7 +77,7 @@ var AddedStep_DEV AddedStep = AddedStep{
 			},
 		},
 		RolePolicyStatements: &[]awsiam.PolicyStatement{
-			pushImagePolicy_DEV(),
+			component.PushImagePolicy(&component.PushImagePolicyProps_DEV),
 		},
 	}),
 
@@ -112,6 +114,7 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 
 	EchoAppGammaProps_FIRST_ENV:  stages.EchoAppGammaProps_DEV,
 	EchoAppGammaProps_SECOND_ENV: stages.EchoAppGammaProps_PROD,
+	NextDeployPreparationProps:   stages.NextDeployPreparationProps_DEV,
 
 	AddedStep: AddedStep_DEV,
 
@@ -140,6 +143,19 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 				Post: &[]pipelines.Step{
 					AddedStep_PROD.PushImageStep,
 					AddedStep_PROD.CheckPushImageStep,
+				},
+			},
+		},
+	},
+
+	AddStageOpts_NEXT_ENV_PREP: pipelines.AddStageOpts{
+		StackSteps: &[]*pipelines.StackSteps{
+			&pipelines.StackSteps{
+				//Repo Stack pass at runtime
+				Post: &[]pipelines.Step{
+					pipelines.NewManualApprovalStep(jsii.String("CheckRoleDeploy"), &pipelines.ManualApprovalStepProps{
+						Comment: jsii.String("Please, You can check if the role was deployed to production"),
+					}),
 				},
 			},
 		},

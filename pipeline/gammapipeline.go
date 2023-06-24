@@ -102,6 +102,15 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 	addStackToStackSteps(deploy_FIRST_ENV.EchoAppGammaFargateS3ComponentStack(), FargateStackPosition, &sprops.AddStageOpts_FIRST_ENV)
 
 	pipe.AddStage(deploy_FIRST_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_FIRST_ENV)
+
+	//Prepare second Enviroment
+
+	deploy_preparation := stages.NewNextDeployPreparation(stack, nil, &sprops.NextDeployPreparationProps)
+
+	addStackToStackSteps(deploy_preparation.RolePushImageCrossAccount().RolePushImageCrossAccountStack(), 0, &sprops.AddStageOpts_NEXT_ENV_PREP)
+
+	pipe.AddStage(deploy_preparation.NextDeployPreparationStage(), &sprops.AddStageOpts_NEXT_ENV_PREP)
+
 	//Second Enviroment: Prod
 	deploy_SECOND_ENV := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_SECOND_ENV) //PROD Environment
 
