@@ -16,7 +16,7 @@ func addStackToStackSteps(stack awscdk.Stack, pos int, props *pipelines.AddStage
 	StackStepPtr.Stack = stack
 }
 
-func PushEcrPolicy() awsiam.PolicyStatement {
+func pushImagePolicy_DEV() awsiam.PolicyStatement {
 
 	pl := awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
 		Effect:    awsiam.Effect_ALLOW,

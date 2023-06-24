@@ -60,7 +60,6 @@ var AddedStep_DEV AddedStep = AddedStep{
 			"docker tag $REPOSITORY_NAME_DEV:latest $CDK_DEV_ACCOUNT.dkr.ecr.$CDK_DEV_REGION.amazonaws.com/$REPOSITORY_NAME_DEV:latest",
 			"docker push $CDK_DEV_ACCOUNT.dkr.ecr.$CDK_DEV_REGION.amazonaws.com/$REPOSITORY_NAME_DEV:latest",
 		),
-
 		BuildEnvironment: &awscodebuild.BuildEnvironment{
 			Privileged: jsii.Bool(true), //Run Docker inside CodeBuild container
 			EnvironmentVariables: &map[string]*awscodebuild.BuildEnvironmentVariable{
@@ -74,6 +73,9 @@ var AddedStep_DEV AddedStep = AddedStep{
 					Value: aws.ToString(component.RepoProps_DEV.RepositoryProps.RepositoryName),
 				},
 			},
+		},
+		RolePolicyStatements: &[]awsiam.PolicyStatement{
+			pushImagePolicy_DEV(),
 		},
 	}),
 
@@ -103,14 +105,9 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 	},
 
 	CodePipelineProps: pipelines.CodePipelineProps{
-		PipelineName:     jsii.String("EchoAppGamma-Pipeline-dev"),
-		CrossAccountKeys: jsii.Bool(true),
-		CodeBuildDefaults: &pipelines.CodeBuildOptions{
-			RolePolicy: &[]awsiam.PolicyStatement{
-				PushEcrPolicy(), //docker login sirve para dev account no para prod account
-			},
-			BuildEnvironment: &awscodebuild.BuildEnvironment{},
-		},
+		PipelineName:      jsii.String("EchoAppGamma-Pipeline-dev"),
+		CrossAccountKeys:  jsii.Bool(true),
+		CodeBuildDefaults: &pipelines.CodeBuildOptions{},
 	},
 
 	EchoAppGammaProps_FIRST_ENV:  stages.EchoAppGammaProps_DEV,
