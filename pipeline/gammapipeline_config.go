@@ -114,7 +114,7 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 
 	EchoAppGammaProps_FIRST_ENV:  stages.EchoAppGammaProps_DEV,
 	EchoAppGammaProps_SECOND_ENV: stages.EchoAppGammaProps_PROD,
-	NextDeployPreparationProps:   stages.NextDeployPreparationProps_DEV,
+	NextDeployPreparationProps:   stages.NextDeployPreparationProps_DEV_CROSS,
 
 	AddedStep: AddedStep_DEV,
 

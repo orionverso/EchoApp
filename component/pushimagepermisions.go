@@ -41,7 +41,7 @@ type RolePushImageCrossAccount interface {
 
 func NewRolePushImageCrossAccount(scope constructs.Construct, id *string, props *RolePushImageCrossAccountProps) RolePushImageCrossAccount {
 
-	var sprops RolePushImageCrossAccountProps = RolePushImageCrossAccountProps_DEV
+	var sprops RolePushImageCrossAccountProps = RolePushImageCrossAccountProps_DEV_CROSS
 	var sid RolePushImageCrossAccountPropsIds = sprops.RolePushImageCrossAccountPropsIds
 
 	if props != nil {
@@ -63,7 +63,7 @@ func NewRolePushImageCrossAccount(scope constructs.Construct, id *string, props 
 
 //CONFIGURATIONS
 
-var RolePushImageCrossAccountProps_DEV RolePushImageCrossAccountProps = RolePushImageCrossAccountProps{
+var RolePushImageCrossAccountProps_DEV_CROSS RolePushImageCrossAccountProps = RolePushImageCrossAccountProps{
 	RoleProps: awsiam.RoleProps{
 		AssumedBy: awsiam.NewAccountPrincipal(environment.StackProps_DEV.Env.Account),
 		InlinePolicies: &map[string]awsiam.PolicyDocument{

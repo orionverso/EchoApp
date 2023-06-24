@@ -40,7 +40,7 @@ type NextDeployPreparation interface {
 
 func NewNextDeployPreparation(scope constructs.Construct, id *string, props *NextDeployPreparationProps) nextDeployPreparation {
 
-	var sprops NextDeployPreparationProps = NextDeployPreparationProps_DEV
+	var sprops NextDeployPreparationProps = NextDeployPreparationProps_DEV_CROSS
 	var sid NextDeployPreparationProps_Ids = sprops.NextDeployPreparationProps_Ids
 
 	if props != nil {
@@ -60,9 +60,9 @@ func NewNextDeployPreparation(scope constructs.Construct, id *string, props *Nex
 
 }
 
-var NextDeployPreparationProps_DEV NextDeployPreparationProps = NextDeployPreparationProps{
-	RolePushImageCrossAccountProps: component.RolePushImageCrossAccountProps_DEV,
-	StageProps:                     environment.Stage_DEV,
+var NextDeployPreparationProps_DEV_CROSS NextDeployPreparationProps = NextDeployPreparationProps{
+	RolePushImageCrossAccountProps: component.RolePushImageCrossAccountProps_DEV_CROSS,
+	StageProps:                     environment.Stage_PROD,
 	NextDeployPreparationProps_Ids: NextDeployPreparationProps_Ids{
 		Stage_Id:                 "AllowFirstEnvPushImageToSecondEnv",
 		NextDeployPreparation_Id: "AssumePushImageStage",
