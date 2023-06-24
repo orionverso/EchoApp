@@ -50,7 +50,7 @@ func NewRolePushImageCrossAccount(scope constructs.Construct, id *string, props 
 	}
 
 	if id != nil {
-		sid.RolePushImageCrossAccount_Id = *id
+		sid.RolePushImageCrossAccountStack_Id = *id //TODO: Can overwrite only construct names.
 	}
 
 	stack := awscdk.NewStack(scope, jsii.String(sid.RolePushImageCrossAccountStack_Id), &sprops.StackProps)

@@ -49,7 +49,7 @@ func NewNextDeployPreparation(scope constructs.Construct, id *string, props *Nex
 	}
 
 	if id != nil {
-		sid.NextDeployPreparation_Id = *id
+		sid.Stage_Id = *id
 	}
 
 	stage := awscdk.NewStage(scope, jsii.String(sid.Stage_Id), &sprops.StageProps)
@@ -64,7 +64,7 @@ var NextDeployPreparationProps_DEV_CROSS NextDeployPreparationProps = NextDeploy
 	RolePushImageCrossAccountProps: component.RolePushImageCrossAccountProps_DEV_CROSS,
 	StageProps:                     environment.Stage_PROD,
 	NextDeployPreparationProps_Ids: NextDeployPreparationProps_Ids{
-		Stage_Id:                 "AllowFirstEnvPushImageToSecondEnv",
+		Stage_Id:                 "PreparationStageToDeployNextEnviroment",
 		NextDeployPreparation_Id: "AssumePushImageStage",
 	},
 }

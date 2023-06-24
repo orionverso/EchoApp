@@ -34,7 +34,7 @@ type GammaPipelineProps struct {
 	StackProps                   awscdk.StackProps
 	CfnConnectionProps           awscodestarconnections.CfnConnectionProps
 	ConnectionSourceOptions      pipelines.ConnectionSourceOptions
-	CodeBuildStepProps           pipelines.CodeBuildStepProps
+	CodeBuildSynthStepProps      pipelines.CodeBuildStepProps
 	CodePipelineProps            pipelines.CodePipelineProps
 	EchoAppGammaProps_FIRST_ENV  stages.EchoAppGammaProps
 	EchoAppGammaProps_SECOND_ENV stages.EchoAppGammaProps
@@ -102,8 +102,26 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 		TriggerOnPush: jsii.Bool(false),
 	},
 
-	CodeBuildStepProps: pipelines.CodeBuildStepProps{
+	CodeBuildSynthStepProps: pipelines.CodeBuildStepProps{
 		Commands: jsii.Strings("npm install -g aws-cdk", "cdk synth"),
+		BuildEnvironment: &awscodebuild.BuildEnvironment{ //At synth time we need all enviroment variables.
+			EnvironmentVariables: &map[string]*awscodebuild.BuildEnvironmentVariable{
+				"CDK_DEV_REGION": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(environment.StackProps_DEV.Env.Region),
+				},
+				"CDK_DEV_ACCOUNT": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(environment.StackProps_DEV.Env.Account),
+				},
+
+				"CDK_PROD_REGION": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(environment.StackProps_PROD.Env.Region),
+				},
+
+				"CDK_PROD_ACCOUNT": &awscodebuild.BuildEnvironmentVariable{
+					Value: aws.ToString(environment.StackProps_PROD.Env.Account),
+				},
+			},
+		},
 	},
 
 	CodePipelineProps: pipelines.CodePipelineProps{

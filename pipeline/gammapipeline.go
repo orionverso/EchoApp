@@ -82,11 +82,11 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 		&sprops.ConnectionSourceOptions,
 	)
 
-	sprops.CodeBuildStepProps.Input = GithubRepository
+	sprops.CodeBuildSynthStepProps.Input = GithubRepository
 
 	Template := pipelines.NewCodeBuildStep(
 		jsii.String(sid.CodeBuildStep_Id),
-		&sprops.CodeBuildStepProps,
+		&sprops.CodeBuildSynthStepProps,
 	)
 
 	sprops.CodePipelineProps.Synth = Template
@@ -101,7 +101,7 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 	addStackToStackSteps(deploy_FIRST_ENV.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_FIRST_ENV)
 	addStackToStackSteps(deploy_FIRST_ENV.EchoAppGammaFargateS3ComponentStack(), FargateStackPosition, &sprops.AddStageOpts_FIRST_ENV)
 
-	pipe.AddStage(deploy_FIRST_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_FIRST_ENV)
+	//pipe.AddStage(deploy_FIRST_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_FIRST_ENV)
 
 	//Prepare second Enviroment
 
