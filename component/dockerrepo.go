@@ -75,7 +75,7 @@ var RepoProps_DEFAULT RepoProps = RepoProps{
 }
 
 var RepoProps_DEV RepoProps = RepoProps{
-	StackProps: environment.StackProps_DEFAULT,
+	StackProps: environment.StackProps_DEV,
 	RepositoryProps: awsecr.RepositoryProps{
 		RepositoryName:   jsii.String("writer-repo-app-dev"),
 		RemovalPolicy:    awscdk.RemovalPolicy_DESTROY,
@@ -88,7 +88,7 @@ var RepoProps_DEV RepoProps = RepoProps{
 }
 
 var RepoProps_PROD RepoProps = RepoProps{
-	StackProps: environment.StackProps_DEFAULT,
+	StackProps: environment.StackProps_PROD,
 	RepositoryProps: awsecr.RepositoryProps{
 		RepositoryName:   jsii.String("writer-repo-app-prod"),
 		RemovalPolicy:    awscdk.RemovalPolicy_DESTROY,

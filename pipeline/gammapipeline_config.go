@@ -36,10 +36,10 @@ type GammaPipelineProps struct {
 	ConnectionSourceOptions      pipelines.ConnectionSourceOptions
 	CodeBuildStepProps           pipelines.CodeBuildStepProps
 	CodePipelineProps            pipelines.CodePipelineProps
-	EchoAppGammaProps_First_Env  stages.EchoAppGammaProps
-	EchoAppGammaProps_Second_Env stages.EchoAppGammaProps
-	AddStageOpts_First_Env       pipelines.AddStageOpts
-	AddStageOpts_Second_Env      pipelines.AddStageOpts
+	EchoAppGammaProps_FIRST_ENV  stages.EchoAppGammaProps
+	EchoAppGammaProps_SECOND_ENV stages.EchoAppGammaProps
+	AddStageOpts_FIRST_ENV       pipelines.AddStageOpts
+	AddStageOpts_SECOND_ENV      pipelines.AddStageOpts
 	AddedStep                    AddedStep
 	//Identifiers
 	GammaPipelineIds
@@ -92,7 +92,7 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 		CrossAccountKeys: jsii.Bool(true),
 		CodeBuildDefaults: &pipelines.CodeBuildOptions{
 			RolePolicy: &[]awsiam.PolicyStatement{
-				PushEcrPolicy(),
+				PushEcrPolicy(), //docker login sirve para dev account no para prod account
 			},
 			BuildEnvironment: &awscodebuild.BuildEnvironment{
 				Privileged: jsii.Bool(true), //You need for build docker images inside codebuild project
@@ -122,12 +122,12 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 		},
 	},
 
-	EchoAppGammaProps_First_Env:  stages.EchoAppGammaProps_DEV,
-	EchoAppGammaProps_Second_Env: stages.EchoAppGammaProps_PROD,
+	EchoAppGammaProps_FIRST_ENV:  stages.EchoAppGammaProps_DEV,
+	EchoAppGammaProps_SECOND_ENV: stages.EchoAppGammaProps_PROD,
 
 	AddedStep: AddedStep_DEV,
 
-	AddStageOpts_First_Env: pipelines.AddStageOpts{
+	AddStageOpts_FIRST_ENV: pipelines.AddStageOpts{
 		StackSteps: &[]*pipelines.StackSteps{
 			&pipelines.StackSteps{ //RepoStack
 				//Stack: At runtime
@@ -145,7 +145,7 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 		},
 	},
 
-	AddStageOpts_Second_Env: pipelines.AddStageOpts{
+	AddStageOpts_SECOND_ENV: pipelines.AddStageOpts{
 		StackSteps: &[]*pipelines.StackSteps{
 			&pipelines.StackSteps{
 				//Repo Stack pass at runtime
@@ -177,7 +177,7 @@ var AddedStep_PROD AddedStep = AddedStep{
 			"aws ecr get-login-password --region $CDK_PROD_REGION | docker login --username AWS --password-stdin $CDK_PROD_ACCOUNT.dkr.ecr.$CDK_PROD_REGION.amazonaws.com",
 			"docker build -t $REPOSITORY_NAME_PROD .",
 			"docker tag $REPOSITORY_NAME_PROD:latest $CDK_PROD_ACCOUNT.dkr.ecr.$CDK_PROD_REGION.amazonaws.com/$REPOSITORY_NAME_PROD:latest",
-			"docker push $CDK_PROD_ACCOUNT.dkr.$CDK_PROD_REGION.amazonaws.com/$REPOSITORY_NAME_PROD:latest",
+			"docker push $CDK_PROD_ACCOUNT.dkr.ecr.$CDK_PROD_REGION.amazonaws.com/$REPOSITORY_NAME_PROD:latest",
 		),
 
 		BuildEnvironment: &awscodebuild.BuildEnvironment{

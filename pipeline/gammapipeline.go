@@ -16,8 +16,8 @@ type GammaPipeline interface {
 	GammaCodePipelineSource() pipelines.CodePipelineSource
 	GammaCodeBuildStep() pipelines.CodeBuildStep
 	GammaCodePipeline() pipelines.CodePipeline
-	GammaEchoAppGamma_First_Env() stages.EchoAppGamma
-	GammaEchoAppGamma_Second_Env() stages.EchoAppGamma
+	GammaEchoAppGamma_FIRST_ENV() stages.EchoAppGamma
+	GammaEchoAppGamma_SECOND_ENV() stages.EchoAppGamma
 }
 
 type gammaPipeline struct {
@@ -26,8 +26,8 @@ type gammaPipeline struct {
 	codePipelineSource      pipelines.CodePipelineSource
 	codeBuildStep           pipelines.CodeBuildStep
 	codePipeline            pipelines.CodePipeline
-	echoAppGamma_First_Env  stages.EchoAppGamma
-	echoAppGamma_Second_Env stages.EchoAppGamma
+	echoAppGamma_FIRST_ENV  stages.EchoAppGamma
+	echoAppGamma_SECOND_ENV stages.EchoAppGamma
 }
 
 func (af gammaPipeline) GammaCfnConnection() awscodestarconnections.CfnConnection {
@@ -46,12 +46,12 @@ func (af gammaPipeline) GammaCodePipeline() pipelines.CodePipeline {
 	return af.codePipeline
 }
 
-func (af gammaPipeline) GammaEchoAppGamma_First_Env() stages.EchoAppGamma {
-	return af.echoAppGamma_First_Env
+func (af gammaPipeline) GammaEchoAppGamma_FIRST_ENV() stages.EchoAppGamma {
+	return af.echoAppGamma_FIRST_ENV
 }
 
-func (af gammaPipeline) GammaEchoAppGamma_Second_Env() stages.EchoAppGamma {
-	return af.echoAppGamma_Second_Env
+func (af gammaPipeline) GammaEchoAppGamma_SECOND_ENV() stages.EchoAppGamma {
+	return af.echoAppGamma_SECOND_ENV
 }
 
 func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipelineProps) GammaPipeline {
@@ -93,25 +93,25 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 
 	pipe := pipelines.NewCodePipeline(stack, jsii.String(sid.CodePipeline_Id), &sprops.CodePipelineProps)
 	//First Environment: Dev
-	deploy_First_Env := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_First_Env) // Development Environment
+	deploy_FIRST_ENV := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_FIRST_ENV) // Development Environment
 
 	sprops.AddedStep.CheckPushImageStep.AddStepDependency(sprops.AddedStep.PushImageStep)
 
 	RepoStackPosition, FargateStackPosition := 0, 1
-	addStackToStackSteps(deploy_First_Env.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_First_Env)
-	addStackToStackSteps(deploy_First_Env.EchoAppGammaFargateS3ComponentStack(), FargateStackPosition, &sprops.AddStageOpts_First_Env)
+	addStackToStackSteps(deploy_FIRST_ENV.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_FIRST_ENV)
+	addStackToStackSteps(deploy_FIRST_ENV.EchoAppGammaFargateS3ComponentStack(), FargateStackPosition, &sprops.AddStageOpts_FIRST_ENV)
 
-	pipe.AddStage(deploy_First_Env.EchoAppGammaStage(), &sprops.AddStageOpts_First_Env)
+	pipe.AddStage(deploy_FIRST_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_FIRST_ENV)
 	//Second Enviroment: Prod
-	deploy_Second_Env := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_Second_Env) //PROD Environment
+	deploy_SECOND_ENV := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_SECOND_ENV) //PROD Environment
 
 	sprops.AddedStep = AddedStep_PROD //Change to Prods steps
 
 	sprops.AddedStep.CheckPushImageStep.AddStepDependency(sprops.AddedStep.PushImageStep)
 
-	addStackToStackSteps(deploy_Second_Env.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_Second_Env) // 0
+	addStackToStackSteps(deploy_SECOND_ENV.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_SECOND_ENV) // 0
 
-	pipe.AddStage(deploy_Second_Env.EchoAppGammaStage(), &sprops.AddStageOpts_Second_Env)
+	pipe.AddStage(deploy_SECOND_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_SECOND_ENV)
 
-	return gammaPipeline{stack, conn, GithubRepository, Template, pipe, deploy_First_Env, deploy_Second_Env}
+	return gammaPipeline{stack, conn, GithubRepository, Template, pipe, deploy_FIRST_ENV, deploy_SECOND_ENV}
 }
