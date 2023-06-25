@@ -73,13 +73,14 @@ var RolePushImageCrossAccountProps_DEV_CROSS RolePushImageCrossAccountProps = Ro
 				},
 			}),
 		},
+		RoleName: awscdk.PhysicalName_GENERATE_IF_NEEDED(), //TODO: Why is this necessary for roles interactions in cross account? Investigte
 	},
 
 	StackProps: environment.StackProps_PROD, //Because it's cross account role
 
 	RolePushImageCrossAccountPropsIds: RolePushImageCrossAccountPropsIds{
 		RolePushImageCrossAccount_Id:      "RolePushImageCrossAccountToAssumeFromCodeBuildinFirstENV-dev",
-		Role_Id:                           "AssumePushImageToAnotherAccountRole-dev",
+		Role_Id:                           "ToBeAssumedPushImageCrossAccount-dev",
 		RolePushImageCrossAccountStack_Id: "AllowCodeBuildInFirstEnvPushImage",
 	},
 }

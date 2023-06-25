@@ -17,12 +17,14 @@ type NextDeployPreparationProps_Ids struct {
 type NextDeployPreparationProps struct {
 	StageProps                     awscdk.StageProps
 	RolePushImageCrossAccountProps component.RolePushImageCrossAccountProps
+	RoleWillAssumeProps            component.RoleWillAssumeProps
 	NextDeployPreparationProps_Ids
 }
 
 type nextDeployPreparation struct {
 	awscdk.Stage
 	assumePushImagePerm component.RolePushImageCrossAccount
+	roleWillAssume      component.RoleWillAssume
 }
 
 func (as nextDeployPreparation) NextDeployPreparationStage() awscdk.Stage {
@@ -33,9 +35,14 @@ func (as nextDeployPreparation) RolePushImageCrossAccount() component.RolePushIm
 	return as.assumePushImagePerm
 }
 
+func (as nextDeployPreparation) RoleWillAssume() component.RoleWillAssume {
+	return as.roleWillAssume
+}
+
 type NextDeployPreparation interface {
 	NextDeployPreparationStage() awscdk.Stage
 	RolePushImageCrossAccount() component.RolePushImageCrossAccount
+	RoleWillAssume() component.RoleWillAssume
 }
 
 func NewNextDeployPreparation(scope constructs.Construct, id *string, props *NextDeployPreparationProps) nextDeployPreparation {
@@ -54,14 +61,19 @@ func NewNextDeployPreparation(scope constructs.Construct, id *string, props *Nex
 
 	stage := awscdk.NewStage(scope, jsii.String(sid.Stage_Id), &sprops.StageProps)
 
-	cpt := component.NewRolePushImageCrossAccount(stage, nil, &sprops.RolePushImageCrossAccountProps)
+	cpt1 := component.NewRolePushImageCrossAccount(stage, nil, &sprops.RolePushImageCrossAccountProps)
 
-	return nextDeployPreparation{stage, cpt}
+	cpt2 := component.NewRoleWillAssume(stage, nil, &sprops.RoleWillAssumeProps)
+
+	cpt1.RolePushImageCrossAccountRole().GrantAssumeRole(cpt2.RoleWillAssumeRole())
+
+	return nextDeployPreparation{stage, cpt1, cpt2}
 
 }
 
 var NextDeployPreparationProps_DEV_CROSS NextDeployPreparationProps = NextDeployPreparationProps{
 	RolePushImageCrossAccountProps: component.RolePushImageCrossAccountProps_DEV_CROSS,
+	RoleWillAssumeProps:            component.RoleWillAssumeProps_DEV,
 	StageProps:                     environment.Stage_PROD,
 	NextDeployPreparationProps_Ids: NextDeployPreparationProps_Ids{
 		Stage_Id:                 "PreparationStageToDeployNextEnviroment",
