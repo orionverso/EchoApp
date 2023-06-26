@@ -95,30 +95,45 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 	//First Environment: Dev
 	deploy_FIRST_ENV := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_FIRST_ENV) // Development Environment
 
-	sprops.AddedStep.CheckPushImageStep.AddStepDependency(sprops.AddedStep.PushImageStep)
+	pushImageToRepo_v1 := pipelines.NewCodeBuildStep(jsii.String(sid.PushImageStep_Id), &sprops.AddedStepProps.PushImageStepProps)
 
-	RepoStackPosition, FargateStackPosition := 0, 1
-	addStackToStackSteps(deploy_FIRST_ENV.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_FIRST_ENV)
-	addStackToStackSteps(deploy_FIRST_ENV.EchoAppGammaFargateS3ComponentStack(), FargateStackPosition, &sprops.AddStageOpts_FIRST_ENV)
+	checkImageWasPushed_v1 := pipelines.NewManualApprovalStep(jsii.String(sid.CheckPushImageStep_Id), &sprops.AddedStepProps.CheckPushImageStepProps)
 
-	//pipe.AddStage(deploy_FIRST_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_FIRST_ENV)
+	checkImageWasPushed_v1.AddStepDependency(pushImageToRepo_v1)
 
-	//Prepare second Enviroment
+	repoSteps := pipelines.StackSteps{
+		Stack: deploy_FIRST_ENV.EchoAppGammaRepositoryComponentStack(),
+		Post:  &[]pipelines.Step{pushImageToRepo_v1, checkImageWasPushed_v1},
+	}
+
+	*sprops.AddStageOpts_FIRST_ENV.StackSteps = append(*sprops.AddStageOpts_FIRST_ENV.StackSteps, &repoSteps)
+
+	//pipe.AddStage(deploy_FIRST_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_FIRST_ENV) Now, we dont need test this part
+
+	//Preparation Stage
 
 	deploy_preparation := stages.NewNextDeployPreparation(stack, nil, &sprops.NextDeployPreparationProps)
 
-	addStackToStackSteps(deploy_preparation.RolePushImageCrossAccount().RolePushImageCrossAccountStack(), 0, &sprops.AddStageOpts_NEXT_ENV_PREP)
+	sprops.AddedStepProps = AddedStepProps_PROD
+	sid.AddedStepIds = AddedStepProps_PROD.AddedStepIds
+
+	promoteProdDecision := pipelines.NewManualApprovalStep(jsii.String(sid.PromoteToProduction_Id), &sprops.AddedStepProps.PromoteToProductionProps)
+
+	//It is more easy with stackdeployment and stagedeployment. Explore it!
+
+	RoleSteps := pipelines.StackSteps{ //It is more easy with stackdeployment and stagedeployment
+		Stack: deploy_preparation.RolePushImageCrossAccount().RolePushImageCrossAccountStack(),
+		Post:  &[]pipelines.Step{promoteProdDecision},
+	}
+
+	*sprops.AddStageOpts_NEXT_ENV_PREP.StackSteps = append(*sprops.AddStageOpts_NEXT_ENV_PREP.StackSteps, &RoleSteps)
 
 	pipe.AddStage(deploy_preparation.NextDeployPreparationStage(), &sprops.AddStageOpts_NEXT_ENV_PREP)
 
 	//Second Enviroment: Prod
 	deploy_SECOND_ENV := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_SECOND_ENV) //PROD Environment
 
-	sprops.AddedStep = AddedStep_PROD //Change to Prods steps
-
-	sprops.AddedStep.CheckPushImageStep.AddStepDependency(sprops.AddedStep.PushImageStep)
-
-	addStackToStackSteps(deploy_SECOND_ENV.EchoAppGammaRepositoryComponentStack(), RepoStackPosition, &sprops.AddStageOpts_SECOND_ENV) // 0
+	//sprops.AddedStepProps.PushImageStepProps.Role = deploy_preparation.RoleWillAssume().RoleWillAssumeRole()
 
 	pipe.AddStage(deploy_SECOND_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_SECOND_ENV)
 

@@ -14,6 +14,19 @@ import (
 	"github.com/aws/jsii-runtime-go"
 )
 
+type AddedStepIds struct {
+	PushImageStep_Id       string
+	CheckPushImageStep_Id  string
+	PromoteToProduction_Id string
+}
+
+type AddedStepProps struct {
+	PushImageStepProps       pipelines.CodeBuildStepProps
+	CheckPushImageStepProps  pipelines.ManualApprovalStepProps
+	PromoteToProductionProps pipelines.ManualApprovalStepProps
+	AddedStepIds
+}
+
 type GammaPipelineIds struct {
 	GammaPipeline_Id                        string
 	CfnConnection_Id                        string
@@ -22,12 +35,7 @@ type GammaPipelineIds struct {
 	CodeBuildStep_Id                        string
 	CodePipeline_Id                         string
 	EchoAppGamma_Id                         string
-}
-
-type AddedStep struct {
-	PushImageStep       pipelines.CodeBuildStep
-	CheckPushImageStep  pipelines.ManualApprovalStep
-	PromoteToProduction pipelines.ManualApprovalStep
+	AddedStepIds
 }
 
 type GammaPipelineProps struct {
@@ -42,7 +50,7 @@ type GammaPipelineProps struct {
 	AddStageOpts_FIRST_ENV       pipelines.AddStageOpts
 	AddStageOpts_SECOND_ENV      pipelines.AddStageOpts
 	AddStageOpts_NEXT_ENV_PREP   pipelines.AddStageOpts
-	AddedStep                    AddedStep
+	AddedStepProps               AddedStepProps
 	//Identifiers
 	GammaPipelineIds
 }
@@ -53,8 +61,8 @@ type GammaPipelineProps struct {
 
 // DEV: Development configurations
 
-var AddedStep_DEV AddedStep = AddedStep{
-	PushImageStep: pipelines.NewCodeBuildStep(jsii.String("PushImagetoRepo"), &pipelines.CodeBuildStepProps{
+var AddedStepProps_DEV AddedStepProps = AddedStepProps{
+	PushImageStepProps: pipelines.CodeBuildStepProps{
 		Commands: jsii.Strings(
 			"cd webserver",
 			"aws ecr get-login-password --region $CDK_DEV_REGION | docker login --username AWS --password-stdin $CDK_DEV_ACCOUNT.dkr.ecr.$CDK_DEV_REGION.amazonaws.com",
@@ -79,14 +87,20 @@ var AddedStep_DEV AddedStep = AddedStep{
 		RolePolicyStatements: &[]awsiam.PolicyStatement{
 			component.PushImagePolicy(&component.PushImagePolicyProps_DEV),
 		},
-	}),
+	},
 
-	CheckPushImageStep: pipelines.NewManualApprovalStep(jsii.String("CheckImagePush"), &pipelines.ManualApprovalStepProps{
+	CheckPushImageStepProps: pipelines.ManualApprovalStepProps{
 		Comment: jsii.String("You can check the image was pushing"),
-	}),
-	PromoteToProduction: pipelines.NewManualApprovalStep(jsii.String("ProductionPromotion"), &pipelines.ManualApprovalStepProps{
+	},
+	PromoteToProductionProps: pipelines.ManualApprovalStepProps{
 		Comment: jsii.String("Last step. This component will be deployed to production"),
-	}),
+	},
+
+	AddedStepIds: AddedStepIds{
+		PushImageStep_Id:       "PushImageToEcrRepoStep-dev",
+		CheckPushImageStep_Id:  "CheckImageInEcrRepoStep-dev",
+		PromoteToProduction_Id: "PromoteToProductionStep-dev",
+	},
 }
 
 var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
@@ -134,49 +148,18 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 	EchoAppGammaProps_SECOND_ENV: stages.EchoAppGammaProps_PROD,
 	NextDeployPreparationProps:   stages.NextDeployPreparationProps_DEV_CROSS,
 
-	AddedStep: AddedStep_DEV,
+	AddedStepProps: AddedStepProps_DEV,
 
 	AddStageOpts_FIRST_ENV: pipelines.AddStageOpts{
-		StackSteps: &[]*pipelines.StackSteps{
-			&pipelines.StackSteps{ //RepoStack
-				//Stack: At runtime
-				Post: &[]pipelines.Step{
-					AddedStep_DEV.PushImageStep,
-					AddedStep_DEV.CheckPushImageStep,
-				},
-			},
-			&pipelines.StackSteps{ //FargateStack
-				//Stack: At runtime
-				Post: &[]pipelines.Step{
-					AddedStep_DEV.PromoteToProduction,
-				},
-			},
-		},
+		StackSteps: &[]*pipelines.StackSteps{}, // avoid nil desrefenrence
 	},
 
 	AddStageOpts_SECOND_ENV: pipelines.AddStageOpts{
-		StackSteps: &[]*pipelines.StackSteps{
-			&pipelines.StackSteps{
-				//Repo Stack pass at runtime
-				Post: &[]pipelines.Step{
-					AddedStep_PROD.PushImageStep,
-					AddedStep_PROD.CheckPushImageStep,
-				},
-			},
-		},
+		StackSteps: &[]*pipelines.StackSteps{}, // avoid nil desrefenrence
 	},
 
 	AddStageOpts_NEXT_ENV_PREP: pipelines.AddStageOpts{
-		StackSteps: &[]*pipelines.StackSteps{
-			&pipelines.StackSteps{
-				//Repo Stack pass at runtime
-				Post: &[]pipelines.Step{
-					pipelines.NewManualApprovalStep(jsii.String("CheckRoleDeploy"), &pipelines.ManualApprovalStepProps{
-						Comment: jsii.String("Please, You can check if the role was deployed to production"),
-					}),
-				},
-			},
-		},
+		StackSteps: &[]*pipelines.StackSteps{}, //avoid nil desreference
 	},
 
 	GammaPipelineIds: GammaPipelineIds{
@@ -187,13 +170,14 @@ var GammaPipelineProps_DEV GammaPipelineProps = GammaPipelineProps{
 		CodeBuildStep_Id:                        "SynthStep",
 		CodePipeline_Id:                         "EchoAppGamma-Pipeline",
 		EchoAppGamma_Id:                         "DeployStageOf-EchoAppGamma",
+		AddedStepIds:                            AddedStepProps_DEV.AddedStepIds,
 	},
 }
 
 //PRODUCTION
 
-var AddedStep_PROD AddedStep = AddedStep{
-	PushImageStep: pipelines.NewCodeBuildStep(jsii.String("PushImagetoRepo"), &pipelines.CodeBuildStepProps{
+var AddedStepProps_PROD AddedStepProps = AddedStepProps{
+	PushImageStepProps: pipelines.CodeBuildStepProps{
 		Commands: jsii.Strings(
 			"cd webserver",
 			"aws ecr get-login-password --region $CDK_PROD_REGION | docker login --username AWS --password-stdin $CDK_PROD_ACCOUNT.dkr.ecr.$CDK_PROD_REGION.amazonaws.com",
@@ -217,9 +201,15 @@ var AddedStep_PROD AddedStep = AddedStep{
 				},
 			},
 		},
-	}),
+	},
 
-	CheckPushImageStep: pipelines.NewManualApprovalStep(jsii.String("CheckImagePush"), &pipelines.ManualApprovalStepProps{
+	CheckPushImageStepProps: pipelines.ManualApprovalStepProps{
 		Comment: jsii.String("You can check the image was pushing"),
-	}),
+	},
+
+	AddedStepIds: AddedStepIds{
+		PushImageStep_Id:       "PushImageToEcrRepoStep-prod",
+		CheckPushImageStep_Id:  "CheckImageInEcrRepoStep-prod",
+		PromoteToProduction_Id: "PromoteToProductionStep-prod",
+	},
 }
