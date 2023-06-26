@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awscodestarconnections"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
 	"github.com/aws/aws-cdk-go/awscdk/v2/pipelines"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
@@ -92,7 +93,9 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 	sprops.CodePipelineProps.Synth = Template
 
 	pipe := pipelines.NewCodePipeline(stack, jsii.String(sid.CodePipeline_Id), &sprops.CodePipelineProps)
+
 	//First Environment: Dev
+
 	deploy_FIRST_ENV := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_FIRST_ENV) // Development Environment
 
 	pushImageToRepo_v1 := pipelines.NewCodeBuildStep(jsii.String(sid.PushImageStep_Id), &sprops.AddedStepProps.PushImageStepProps)
@@ -101,12 +104,12 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 
 	checkImageWasPushed_v1.AddStepDependency(pushImageToRepo_v1)
 
-	repoSteps := pipelines.StackSteps{
+	repoSteps_v1 := pipelines.StackSteps{
 		Stack: deploy_FIRST_ENV.EchoAppGammaRepositoryComponentStack(),
 		Post:  &[]pipelines.Step{pushImageToRepo_v1, checkImageWasPushed_v1},
 	}
 
-	*sprops.AddStageOpts_FIRST_ENV.StackSteps = append(*sprops.AddStageOpts_FIRST_ENV.StackSteps, &repoSteps)
+	*sprops.AddStageOpts_FIRST_ENV.StackSteps = append(*sprops.AddStageOpts_FIRST_ENV.StackSteps, &repoSteps_v1)
 
 	//pipe.AddStage(deploy_FIRST_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_FIRST_ENV) Now, we dont need test this part
 
@@ -130,10 +133,32 @@ func NewGammaPipeline(scope constructs.Construct, id *string, props *GammaPipeli
 
 	pipe.AddStage(deploy_preparation.NextDeployPreparationStage(), &sprops.AddStageOpts_NEXT_ENV_PREP)
 
-	//Second Enviroment: Prod
+	//Second Environment: Prod
+
 	deploy_SECOND_ENV := stages.NewEchoAppGamma(stack, nil, &sprops.EchoAppGammaProps_SECOND_ENV) //PROD Environment
 
-	//sprops.AddedStepProps.PushImageStepProps.Role = deploy_preparation.RoleWillAssume().RoleWillAssumeRole()
+	*sprops.AddedStepProps.PushImageStepProps.RolePolicyStatements = append(*sprops.AddedStepProps.PushImageStepProps.RolePolicyStatements,
+		awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+			Effect:    awsiam.Effect_ALLOW,
+			Actions:   jsii.Strings("sts:AssumeRole"),
+			Resources: jsii.Strings(*deploy_preparation.RolePushImageCrossAccount().RolePushImageCrossAccountRole().RoleArn()),
+		}),
+	)
+
+	sprops.AddedStepProps.AddEnvVar(jsii.String("PUSH_ROLE_ARN"), deploy_preparation.RolePushImageCrossAccount().RolePushImageCrossAccountRole().RoleArn(), &sprops.AddedStepProps.PushImageStepProps)
+
+	pushImageToRepo_v2 := pipelines.NewCodeBuildStep(jsii.String(sid.PushImageStep_Id), &sprops.AddedStepProps.PushImageStepProps)
+
+	checkImageWasPushed_v2 := pipelines.NewManualApprovalStep(jsii.String(sid.CheckPushImageStep_Id), &sprops.AddedStepProps.CheckPushImageStepProps)
+
+	checkImageWasPushed_v2.AddStepDependency(pushImageToRepo_v2)
+
+	repoSteps_v2 := pipelines.StackSteps{
+		Stack: deploy_SECOND_ENV.EchoAppGammaRepositoryComponentStack(),
+		Post:  &[]pipelines.Step{pushImageToRepo_v2, checkImageWasPushed_v2},
+	}
+
+	*sprops.AddStageOpts_SECOND_ENV.StackSteps = append(*sprops.AddStageOpts_SECOND_ENV.StackSteps, &repoSteps_v2)
 
 	pipe.AddStage(deploy_SECOND_ENV.EchoAppGammaStage(), &sprops.AddStageOpts_SECOND_ENV)
 

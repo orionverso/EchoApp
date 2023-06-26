@@ -27,6 +27,14 @@ type AddedStepProps struct {
 	AddedStepIds
 }
 
+func (ad AddedStepProps) AddEnvVar(index *string, value *string, props *pipelines.CodeBuildStepProps) { //Runtime Methods
+	var envvars map[string]*awscodebuild.BuildEnvironmentVariable
+	envvars = *props.BuildEnvironment.EnvironmentVariables
+	envvars[aws.ToString(index)] = &awscodebuild.BuildEnvironmentVariable{
+		Value: value,
+	}
+}
+
 type GammaPipelineIds struct {
 	GammaPipeline_Id                        string
 	CfnConnection_Id                        string
@@ -180,6 +188,11 @@ var AddedStepProps_PROD AddedStepProps = AddedStepProps{
 	PushImageStepProps: pipelines.CodeBuildStepProps{
 		Commands: jsii.Strings(
 			"cd webserver",
+			"cache=\"/tmp/creds\"",
+			"aws sts assume-role --role-arn $PUSH_ROLE_ARN --role-session-name pushing-prod > $cache", //test
+			"export AWS_ACCESS_KEY_ID=$(cat $cache | jq -r '.Credentials.AccessKeyId')",
+			"export AWS_SECRET_ACCESS_KEY=$(cat $cache | jq -r '.Credentials.SecretAccessKey')",
+			"export AWS_SESSION_TOKEN=$(cat $cache | jq -r '.Credentials.SessionToken')",
 			"aws ecr get-login-password --region $CDK_PROD_REGION | docker login --username AWS --password-stdin $CDK_PROD_ACCOUNT.dkr.ecr.$CDK_PROD_REGION.amazonaws.com",
 			"docker build -t $REPOSITORY_NAME_PROD .",
 			"docker tag $REPOSITORY_NAME_PROD:latest $CDK_PROD_ACCOUNT.dkr.ecr.$CDK_PROD_REGION.amazonaws.com/$REPOSITORY_NAME_PROD:latest",
@@ -196,11 +209,17 @@ var AddedStepProps_PROD AddedStepProps = AddedStepProps{
 				"CDK_PROD_ACCOUNT": &awscodebuild.BuildEnvironmentVariable{
 					Value: aws.ToString(environment.StackProps_PROD.Env.Account),
 				},
-				"REPOSITORY_NAME_PROD": &awscodebuild.BuildEnvironmentVariable{ //At runtime
+				"REPOSITORY_NAME_PROD": &awscodebuild.BuildEnvironmentVariable{
 					Value: aws.ToString(component.RepoProps_PROD.RepositoryProps.RepositoryName),
 				},
+				/*
+					"PUSH_ROLE_ARN": &awscodebuild.BuildEnvironmentVariable{
+						//Value: At runtime
+					},
+				*/
 			},
 		},
+		RolePolicyStatements: &[]awsiam.PolicyStatement{},
 	},
 
 	CheckPushImageStepProps: pipelines.ManualApprovalStepProps{
