@@ -1,7 +1,7 @@
 package main
 
 import (
-	"writer_storage_app/pipeline"
+	"writer_storage_app/component"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/jsii-runtime-go"
@@ -12,7 +12,7 @@ func main() {
 
 	app := awscdk.NewApp(nil)
 
-	pipeline.NewGammaPipeline(app, nil, &pipeline.GammaPipelineProps_DEV)
+	component.NewRepo(app, nil, &component.RepoProps_DEV)
 
 	app.Synth(nil)
 }

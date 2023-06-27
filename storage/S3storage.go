@@ -92,6 +92,7 @@ var S3StorageProps_DEV S3StorageProps = S3StorageProps{
 	BucketProps: awss3.BucketProps{
 		RemovalPolicy:     awscdk.RemovalPolicy_DESTROY,
 		AutoDeleteObjects: jsii.Bool(true),
+		BucketName:        jsii.String("bucket-859810-xdkld"),
 	},
 	ChoiceStorageProps: choice.ChoiceStorageProps_DEV,
 	S3StorageIds: S3StorageIds{

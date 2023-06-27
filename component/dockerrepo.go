@@ -34,9 +34,19 @@ func (rp repo) RepoStack() awscdk.Stack {
 	return rp.Stack
 }
 
+// Interactable Implementation
+func (rp repo) Arn() *string {
+	return rp.Repository().RepositoryArn()
+}
+
+func (rp repo) Name() *string {
+	return rp.Repository().RepositoryName()
+}
+
 type Repo interface {
 	Repository() awsecr.Repository
 	RepoStack() awscdk.Stack
+	Interactable
 }
 
 func NewRepo(scope constructs.Construct, id *string, props *RepoProps) Repo {
@@ -56,7 +66,12 @@ func NewRepo(scope constructs.Construct, id *string, props *RepoProps) Repo {
 
 	ecrRepo := awsecr.NewRepository(stack, jsii.String(sid.Repository_Id), &sprops.RepositoryProps)
 
-	return repo{stack, ecrRepo}
+	var rp Repo = repo{stack, ecrRepo}
+	var it Interactable = rp
+
+	NewWithExternalInteraction(stack, nil, &WithExternalInteractionProps_REPO_DEV, it)
+
+	return rp
 }
 
 //CONFIGURATIONS
